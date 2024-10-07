@@ -1,0 +1,13 @@
+== API 문서를 만들기
+
+- Authorization 필요함: Bearer {Token}
+
+==== HTTP Request
+include::{snippets}/user-docs-test/do-something/http-request.adoc[]
+include::{snippets}/user-docs-test/do-something/path-parameters.adoc[]
+include::{snippets}/user-docs-test/do-something/query-parameters.adoc[]
+// include::{snippets}/user-docs-test/do-something/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-docs-test/do-something/http-response.adoc[]
+include::{snippets}/user-docs-test/do-something/response-fields.adoc[]

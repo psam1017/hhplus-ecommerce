@@ -102,7 +102,7 @@ tasks.named('asciidoctor') {
 	configurations 'asciidoctorExt'
 
 	sources {
-		exclude ('**/api/**')
+		exclude ('**/api/**') // 한 번에 묶어서 만들 거라서 api directory 에 있는 걸 제외한 것임. /api/ 디렉토리의 문서는 모아서 따로 만들기.
 	}
 
 	baseDirFollowsSourceDir() // 다른 adoc 파일을 include 할 때 경로를 baseDir 로 맞춘다.

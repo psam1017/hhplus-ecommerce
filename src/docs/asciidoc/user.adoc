@@ -15,5 +15,5 @@ endif::[]
 
 [[User]]
 == User API
-// include::api/users/xxx.adoc[]
+include::api/users/user-do-something.adoc[]
 
