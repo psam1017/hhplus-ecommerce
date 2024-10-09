@@ -21,7 +21,7 @@ import java.util.Optional;
 public class InfrastructureConfig {
 
     @Bean
-    public JwtUtils jwtUtils(@Value("${nodeblack.security.token.secret-key}") String secretKey) {
+    public JwtUtils jwtUtils(@Value("${hhplus.security.token.secret-key}") String secretKey) {
         return new JwtUtils(secretKey);
     }
 

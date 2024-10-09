@@ -1,0 +1,10 @@
+=== 상품 구매하기
+
+==== HTTP Request
+include::{snippets}/order-controller-docs-test/do-order/http-request.adoc[]
+include::{snippets}/order-controller-docs-test/do-order/request-headers.adoc[]
+include::{snippets}/order-controller-docs-test/do-order/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/order-controller-docs-test/do-order/http-response.adoc[]
+include::{snippets}/order-controller-docs-test/do-order/response-fields.adoc[]

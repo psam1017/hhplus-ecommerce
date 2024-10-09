@@ -2,12 +2,12 @@ package hhplus.ecommerce.server.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
-import hhplus.ecommerce.server.interfaces.web.common.security.filter.AuthenticationFailureHandlerImplFilter;
-import hhplus.ecommerce.server.interfaces.web.common.security.filter.JwtAuthenticationFilter;
-import hhplus.ecommerce.server.interfaces.web.common.security.handler.AccessDeniedHandlerImpl;
-import hhplus.ecommerce.server.interfaces.web.common.security.handler.AuthenticationEntryPointImpl;
-import hhplus.ecommerce.server.interfaces.web.common.security.handler.AuthenticationFailureHandlerImpl;
-import hhplus.ecommerce.server.interfaces.web.common.security.userdetails.PrincipalDetailsService;
+import hhplus.ecommerce.server.interfaces.web.support.security.filter.AuthenticationFailureHandlerImplFilter;
+import hhplus.ecommerce.server.interfaces.web.support.security.filter.JwtAuthenticationFilter;
+import hhplus.ecommerce.server.interfaces.web.support.security.handler.AccessDeniedHandlerImpl;
+import hhplus.ecommerce.server.interfaces.web.support.security.handler.AuthenticationEntryPointImpl;
+import hhplus.ecommerce.server.interfaces.web.support.security.handler.AuthenticationFailureHandlerImpl;
+import hhplus.ecommerce.server.interfaces.web.support.security.userdetails.PrincipalDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,7 +33,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -65,9 +64,11 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/rest-docs/**",
                                         "/swagger-ui/**",
-                                        "/actuator/**"
+                                        "/actuator/**",
+                                        "/api/open/**"
                                 ).permitAll()
-                                .requestMatchers("/api/users/**").hasRole("MEMBER")
+                                .requestMatchers("/api/members/**").permitAll()
+//                                .requestMatchers("/api/members/**").hasRole("MEMBER")
                                 .anyRequest().hasRole("ADMIN")
                 )
                 .exceptionHandling(exceptionHandling ->
@@ -97,7 +98,7 @@ public class SecurityConfig {
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }

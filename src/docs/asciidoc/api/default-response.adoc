@@ -1,0 +1,36 @@
+== API Response 공통 구조
+
+[source,http,options="nowrap"]
+----
+{
+  "code" : "200",
+  "message" : "OK",
+  "debug" : "OK",
+  "data" : {}
+}
+----
+
+|===
+|Path|Type|Description
+
+|`+code+`
+|`+String+`
+|API 내부적인 응답 코드이며, 포괄적인 메시지입니다. +
+세부적인 응답은 message 를 통해 전달됩니다.
+
+|`+message+`
+|`+String+`
+|세부적인 응답 메시지이며 중복이 없습니다. +
+enum 문서의 ApiStatus 및 exception 문서를 참조하십시오.
+
+|`+debug+`
+|`+String+`
+|API 내부적인 디버깅 메시지이며, 개발자에게만 노출됩니다. +
+고객에게 전달될 메시지는 프론트엔드에서 정의한 메시지 팩을 사용하십시오.
+
+|`+data+`
+|`+?+`
+|응답 데이터이며, 각 API 마다 타입이 다릅니다. +
+자세한 타입은 각 API 문서를 참조하십시오.
+
+|===
