@@ -44,7 +44,7 @@ public class OrderControllerDocsTest extends RestDocsEnvironment {
 
         // when
         ResultActions resultActions = mockMvc.perform(
-                post("/api/members/orders")
+                post("/api/members/orders/new")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson(post))
@@ -60,6 +60,36 @@ public class OrderControllerDocsTest extends RestDocsEnvironment {
                         requestFields(
                                 fieldWithPath("items[].itemId").description("상품 ID"),
                                 fieldWithPath("items[].amount").description("수량")
+                        ),
+                        relaxedResponseFields(
+                                fieldWithPath("data.orderId").description("주문 ID")
+                        )
+                ));
+    }
+
+    @DisplayName("상품을 구매하고 결제를 승인할 수 있다.")
+    @Test
+    void confirmOrder() throws Exception {
+        // given
+        String accessToken = "xxx.yyy.zzz";
+        Long orderId = 1L;
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+                post("/api/members/orders/{orderId}/confirm", orderId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        // then
+        resultActions
+                .andExpect(status().isOk())
+                .andDo(restDocs.document(
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Bearer 토큰")
+                        ),
+                        pathParameters(
+                                parameterWithName("orderId").description("주문 ID")
                         ),
                         relaxedResponseFields(
                                 fieldWithPath("data.orderId").description("주문 ID")

@@ -1,49 +1,15 @@
 # 프로젝트 문서
 
 ## 목차
-- [기술스택])(#기술스택)
 - [마일스톤](#마일스톤)
 - [시퀀스 다이어그램](#시퀀스-다이어그램)
 - [플로우 차트](#플로우-차트)
+- [ERD](#ERD)
+- [Mock API & Spec](#Mock-API-&-Spec)
+- [기술스택](#기술스택)
+- [패키지 구조](#패키지-구조)
 
 ---
-
-## 기술스택
-<details>
-  <summary>기술스택</summary>
-
-## 기술 스택
-
-### Web Application Server
-- **Java 17**
-- **Spring Boot**
-    - Spring Web
-    - Spring Validation
-    - Spring Security
-    - Jwt
-    - Spring Data JPA
-    - Query DSL
-
-### Messaging Solution
-- **Spring for Apache Kafka**
-
-### Database
-- **H2** (Domain)
-- **Prometheus** (Application Meta Data)
-- **Redis** (Caching)
-
-### Monitoring System
-- **Spring Actuator**
-- **Grafana**
-
-### Documentation
-- **Spring Rest Docs**
-- **Swagger**
-
-### Test
-- **Spring Boot Test**
-
-</details>
 
 ## 마일스톤
 <details>
@@ -118,3 +84,65 @@
 
 </details>
 
+## ERD
+<details>
+  <summary>ERD</summary>
+
+![erd](https://github.com/user-attachments/assets/2bf4cac8-72be-460c-b514-22fdd45aa070)
+
+</details>
+
+## Mock-API-&-Spec
+<details>
+  <summary>Mock API & Spec</summary>
+
+- Rest Docs 와 Swagger 의 전체 내용은 인쇄본을 통해 확인하실 수 있습니다.
+  - [Rest Docs Index]()
+  - [Rest Docs Enumeration]()
+  - [Rest Docs Exception]()
+  - [Swagger UI]()
+
+- Rest Docs 에서 API Spec 을 확인하실 수 있습니다.
+
+![rest-docs-example](https://github.com/user-attachments/assets/313674fd-8f16-450a-9fb9-0bfcf9dcdf45)
+
+- Swagger 를 통해 API 를 테스트할 수 있습니다. API Spec 은 Rest Docs 에서 확인하십시오.
+
+![swagger-example](https://github.com/user-attachments/assets/952473cc-13c1-4be2-923d-9ad818f45a46)
+
+</details>
+
+## 기술스택
+<details>
+  <summary>기술스택</summary>
+
+### Web Application Server
+- **Java 17**
+- **Spring Boot**
+  - Spring Web
+  - Spring Validation
+  - Spring Security
+  - Jwt
+  - Spring Data JPA
+  - Query DSL
+
+### Messaging Solution
+- **Spring for Apache Kafka**
+
+### Database
+- **H2** (Domain)
+- **Prometheus** (Application Meta Data)
+- **Redis** (Caching)
+
+### Monitoring System
+- **Spring Actuator**
+- **Grafana**
+
+### Documentation
+- **Spring Rest Docs**
+- **Swagger**
+
+### Test
+- **Spring Boot Test**
+
+</details>

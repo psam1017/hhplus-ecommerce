@@ -6,12 +6,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class OrderPostResult {
+public class OrderIdResponse {
 
     private Long orderId;
 
     @Builder
-    protected OrderPostResult(Long orderId) {
+    protected OrderIdResponse(Long orderId) {
         this.orderId = orderId;
     }
 }

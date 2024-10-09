@@ -33,6 +33,7 @@ include::api/item/get-item.adoc[]
 == Order API
 
 include::api/order/do-order.adoc[]
+include::api/order/confirm-order.adoc[]
 include::api/order/get-orders.adoc[]
 include::api/order/get-order-detail.adoc[]
 

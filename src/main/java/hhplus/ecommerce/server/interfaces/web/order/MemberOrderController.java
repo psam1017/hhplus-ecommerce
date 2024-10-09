@@ -5,7 +5,7 @@ import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.interfaces.web.order.model.request.OrderPost;
 import hhplus.ecommerce.server.interfaces.web.order.model.request.OrderSlicingSearchCond;
 import hhplus.ecommerce.server.interfaces.web.order.model.response.OrderDetail;
-import hhplus.ecommerce.server.interfaces.web.order.model.response.OrderPostResult;
+import hhplus.ecommerce.server.interfaces.web.order.model.response.OrderIdResponse;
 import hhplus.ecommerce.server.interfaces.web.order.model.response.OrderSlicingResult;
 import hhplus.ecommerce.server.interfaces.web.order.model.response.OrderSummary;
 import hhplus.ecommerce.server.interfaces.web.support.argument.UserId;
@@ -22,13 +22,23 @@ import java.util.List;
 @RestController
 public class MemberOrderController {
 
-    @PostMapping("")
-    public ApiResponse<OrderPostResult> doOrder(
+    @PostMapping("/new")
+    public ApiResponse<OrderIdResponse> doOrder(
             @UserId Long userId,
             @RequestBody @Valid OrderPost post
     ) {
-        return ApiResponse.ok(OrderPostResult.builder()
+        return ApiResponse.ok(OrderIdResponse.builder()
                 .orderId(1L)
+                .build());
+    }
+
+    @PostMapping("/{orderId}/confirm")
+    public ApiResponse<?> confirmOrder(
+            @UserId Long userId,
+            @PathVariable Long orderId
+    ) {
+        return ApiResponse.ok(OrderIdResponse.builder()
+                .orderId(orderId)
                 .build());
     }
 
