@@ -1,11 +1,49 @@
 # 프로젝트 문서
 
 ## 목차
+- [기술스택])(#기술스택)
 - [마일스톤](#마일스톤)
 - [시퀀스 다이어그램](#시퀀스-다이어그램)
 - [플로우 차트](#플로우-차트)
 
 ---
+
+## 기술스택
+<details>
+  <summary>기술스택</summary>
+
+## 기술 스택
+
+### Web Application Server
+- **Java 17**
+- **Spring Boot**
+    - Spring Web
+    - Spring Validation
+    - Spring Security
+    - Jwt
+    - Spring Data JPA
+    - Query DSL
+
+### Messaging Solution
+- **Spring for Apache Kafka**
+
+### Database
+- **H2** (Domain)
+- **Prometheus** (Application Meta Data)
+- **Redis** (Caching)
+
+### Monitoring System
+- **Spring Actuator**
+- **Grafana**
+
+### Documentation
+- **Spring Rest Docs**
+- **Swagger**
+
+### Test
+- **Spring Boot Test**
+
+</details>
 
 ## 마일스톤
 <details>
