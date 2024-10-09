@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.spring.docs.controller;
 
-import hhplus.ecommerce.server.interfaces.web.point.model.requqest.PointChargePost;
-import hhplus.ecommerce.server.interfaces.web.point.model.requqest.PointHistorySlicingSearchCond;
+import hhplus.ecommerce.server.interfaces.point.model.requqest.PointChargePost;
+import hhplus.ecommerce.server.interfaces.point.model.requqest.PointHistorySlicingSearchCond;
 import hhplus.ecommerce.server.spring.docs.RestDocsEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

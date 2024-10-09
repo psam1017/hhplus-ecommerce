@@ -2,7 +2,7 @@ package hhplus.ecommerce.server.spring.docs;
 
 import hhplus.ecommerce.server.ApplicationTests;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.interfaces.web.support.security.filter.JwtAuthenticationFilter;
+import hhplus.ecommerce.server.global.web.security.filter.JwtAuthenticationFilter;
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;

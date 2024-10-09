@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.spring.docs.exception;
 
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiException;
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiResponse;
+import hhplus.ecommerce.server.global.web.api.ApiException;
+import hhplus.ecommerce.server.global.web.api.ApiResponse;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;

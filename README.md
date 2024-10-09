@@ -5,7 +5,7 @@
 - [시퀀스 다이어그램](#시퀀스-다이어그램)
 - [플로우 차트](#플로우-차트)
 - [ERD](#ERD)
-- [Mock API & Spec](#Mock-API-&-Spec)
+- [API Spec](#API-Spec)
 - [기술스택](#기술스택)
 - [패키지 구조](#패키지-구조)
 
@@ -92,15 +92,13 @@
 
 </details>
 
-## Mock-API-&-Spec
+## API-Spec
 <details>
-  <summary>Mock API & Spec</summary>
+  <summary>API Spec</summary>
 
 - Rest Docs 와 Swagger 의 전체 내용은 인쇄본을 통해 확인하실 수 있습니다.
-  - [Rest Docs Index]()
-  - [Rest Docs Enumeration]()
-  - [Rest Docs Exception]()
-  - [Swagger UI]()
+  - [Rest-Docs]()
+  - [Swagger-UI]()
 
 - Rest Docs 에서 API Spec 을 확인하실 수 있습니다.
 
@@ -131,7 +129,7 @@
 
 ### Database
 - **H2** (Domain)
-- **Prometheus** (Application Meta Data)
+- **Prometheus** (Application Metadata)
 - **Redis** (Caching)
 
 ### Monitoring System
@@ -144,5 +142,55 @@
 
 ### Test
 - **Spring Boot Test**
+
+</details>
+
+## 패키지-구조
+<details>
+  <summary>패키지 구조</summary>
+
+```
+/
+├── interfaces
+│   └── (도메인)
+│       ├── Controller.java
+│       └── dto
+│           ├── request
+│           │   └── Request.java
+│           └── response
+│               └── Response.java
+├── application
+│   └── (도메인)
+│       ├── Facade.java
+│       ├── Command.java
+│       └── Info.java
+├── domain
+│   └── (도메인)
+│       ├── Entity.java
+│       ├── Service.java
+│       ├── enumeration
+│       │   └── Enumeration.java
+│       ├── exception
+│       │   └── Exception.java
+│       └── repository
+│           └── Repository.java
+├── infrastructure
+│   ├── jwt
+│   │   └── JwtUtils.java
+│   └── persistence
+│       └── (도메인)
+│           ├── jpa
+│           │   ├── JpaRepository.java
+│           │   └── QueryDslRepository.java
+│           └── RepositoryImpl.java
+└── global
+    ├── config
+    │   └── Config.java
+    └── web
+        ├── interceptor
+        ├── security
+        ├── validator
+        └── ...
+```
 
 </details>

@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.spring.docs.controller;
 
-import hhplus.ecommerce.server.interfaces.web.item.model.request.ItemPageSearchCond;
+import hhplus.ecommerce.server.interfaces.item.model.request.ItemPageSearchCond;
 import hhplus.ecommerce.server.spring.docs.RestDocsEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

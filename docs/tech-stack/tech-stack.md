@@ -15,7 +15,7 @@
 
 ### Database
 - **H2** (Domain)
-- **Prometheus** (Application Meta Data)
+- **Prometheus** (Application Metadata)
 - **Redis** (Caching)
 
 ### Monitoring System

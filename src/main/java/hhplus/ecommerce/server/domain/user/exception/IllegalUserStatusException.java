@@ -1,11 +1,11 @@
 package hhplus.ecommerce.server.domain.user.exception;
 
 import hhplus.ecommerce.server.domain.user.enumeration.UserStatus;
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiException;
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiResponse;
+import hhplus.ecommerce.server.global.web.api.ApiException;
+import hhplus.ecommerce.server.global.web.api.ApiResponse;
 import hhplus.ecommerce.server.domain.common.enumeration.Documentable;
 
-import static hhplus.ecommerce.server.interfaces.web.support.model.api.ApiStatus.ILLEGAL_STATUS;
+import static hhplus.ecommerce.server.global.web.api.ApiStatus.ILLEGAL_STATUS;
 
 public class IllegalUserStatusException extends ApiException {
     @Override

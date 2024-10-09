@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.spring.docs.controller;
 
-import hhplus.ecommerce.server.interfaces.web.user.model.request.UserLoginPost;
+import hhplus.ecommerce.server.interfaces.user.model.request.UserLoginPost;
 import hhplus.ecommerce.server.spring.docs.RestDocsEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

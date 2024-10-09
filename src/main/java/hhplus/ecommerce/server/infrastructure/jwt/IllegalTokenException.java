@@ -1,10 +1,10 @@
 package hhplus.ecommerce.server.infrastructure.jwt;
 
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiException;
-import hhplus.ecommerce.server.interfaces.web.support.model.api.ApiResponse;
+import hhplus.ecommerce.server.global.web.api.ApiException;
+import hhplus.ecommerce.server.global.web.api.ApiResponse;
 import hhplus.ecommerce.server.domain.common.enumeration.Documentable;
 
-import static hhplus.ecommerce.server.interfaces.web.support.model.api.ApiStatus.ILLEGAL_STATUS;
+import static hhplus.ecommerce.server.global.web.api.ApiStatus.ILLEGAL_STATUS;
 
 public class IllegalTokenException extends ApiException {
     @Override
