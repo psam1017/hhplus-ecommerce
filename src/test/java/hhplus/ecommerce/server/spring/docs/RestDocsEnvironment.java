@@ -2,7 +2,7 @@ package hhplus.ecommerce.server.spring.docs;
 
 import hhplus.ecommerce.server.ApplicationTests;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.interfaces.web.common.security.filter.JwtAuthenticationFilter;
+import hhplus.ecommerce.server.interfaces.common.security.filter.JwtAuthenticationFilter;
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,7 @@ public class RestDocsEnvironment extends ApplicationTests {
     protected static final String USER_ROLE_DESCRIPTION = "link:enums/UserRole.html[사용자 권한,role='popup']";
     protected static final String USER_STATUS_DESCRIPTION = "link:enums/UserStatus.html[사용자 상태,role='popup']";
     protected static final String REGISTRATION_ID_DESCRIPTION = "link:enums/RegistrationId.html[OAuth2 등록 ID,role='popup']";
+    protected static final String ORDER_STATUS_DESCRIPTION = "link:enums/OrderStatus.html[주문 상태,role='popup']";
 
     @Autowired
     protected MockMvc mockMvc;

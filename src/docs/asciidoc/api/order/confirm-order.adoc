@@ -1,0 +1,12 @@
+=== 구매 상품 결제 승인하기
+
+- 결제 전 상태인 임시 구매 정보만 결제를 승인할 수 있습니다.
+
+==== HTTP Request
+include::{snippets}/order-controller-docs-test/confirm-order/http-request.adoc[]
+include::{snippets}/order-controller-docs-test/confirm-order/request-headers.adoc[]
+include::{snippets}/order-controller-docs-test/confirm-order/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/order-controller-docs-test/confirm-order/http-response.adoc[]
+include::{snippets}/order-controller-docs-test/confirm-order/response-fields.adoc[]

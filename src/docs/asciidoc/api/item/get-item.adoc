@@ -1,0 +1,9 @@
+=== 상품 상세 조회하기
+
+==== HTTP Request
+include::{snippets}/item-controller-docs-test/get-item/http-request.adoc[]
+include::{snippets}/item-controller-docs-test/get-item/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/item-controller-docs-test/get-item/http-response.adoc[]
+include::{snippets}/item-controller-docs-test/get-item/response-fields.adoc[]

@@ -10,7 +10,32 @@ endif::[]
 :sectlinks:
 :docinfo: shared-head
 
+include::api/default-response.adoc[]
+
 [[User]]
-== link:user.html[User API]
+== User API
+include::api/user/login.adoc[]
+
+[[Point]]
+== Point API
+include::api/point/get-point-balance.adoc[]
+include::api/point/charge-point.adoc[]
+include::api/point/get-point-histories.adoc[]
+
+[[Item]]
+== Item API
+
+include::api/item/find-top-items.adoc[]
+include::api/item/find-items.adoc[]
+include::api/item/get-item.adoc[]
+
+[[Order]]
+== Order API
+
+include::api/order/do-order.adoc[]
+include::api/order/confirm-order.adoc[]
+include::api/order/get-orders.adoc[]
+include::api/order/get-order-detail.adoc[]
+
 == link:exception.html[Exception]
 == link:enum.html[Enumeration]

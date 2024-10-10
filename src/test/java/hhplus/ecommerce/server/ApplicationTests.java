@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.spring.component.PersistenceContextManager;
 import hhplus.ecommerce.server.spring.config.RestDocsConfig;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.function.Supplier;
 
-@Slf4j
 @ExtendWith(RestDocumentationExtension.class)
 @Import(RestDocsConfig.class)
 @AutoConfigureMockMvc

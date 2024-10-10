@@ -1,0 +1,10 @@
+=== 주문내역 조회하기
+
+==== HTTP Request
+include::{snippets}/order-controller-docs-test/get-orders/http-request.adoc[]
+include::{snippets}/order-controller-docs-test/get-orders/request-headers.adoc[]
+include::{snippets}/order-controller-docs-test/get-orders/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/order-controller-docs-test/get-orders/http-response.adoc[]
+include::{snippets}/order-controller-docs-test/get-orders/response-fields.adoc[]

@@ -1,0 +1,9 @@
+=== 사용자 로그인하기
+
+==== HTTP Request
+include::{snippets}/user-controller-docs-test/login/http-request.adoc[]
+include::{snippets}/user-controller-docs-test/login/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/user-controller-docs-test/login/http-response.adoc[]
+include::{snippets}/user-controller-docs-test/login/response-fields.adoc[]

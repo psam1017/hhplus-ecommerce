@@ -1,0 +1,10 @@
+=== 포인트 거래내역 조회하기
+
+==== HTTP Request
+include::{snippets}/point-controller-docs-test/get-point-histories/http-request.adoc[]
+include::{snippets}/point-controller-docs-test/get-point-histories/request-headers.adoc[]
+include::{snippets}/point-controller-docs-test/get-point-histories/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/point-controller-docs-test/get-point-histories/http-response.adoc[]
+include::{snippets}/point-controller-docs-test/get-point-histories/response-fields.adoc[]

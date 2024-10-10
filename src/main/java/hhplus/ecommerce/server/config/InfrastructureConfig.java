@@ -2,8 +2,8 @@ package hhplus.ecommerce.server.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
-import hhplus.ecommerce.server.infrastructure.p6spy.P6SpyEventListener;
-import hhplus.ecommerce.server.infrastructure.p6spy.P6SpyFormatter;
+import hhplus.ecommerce.server.config.p6spy.P6SpyEventListener;
+import hhplus.ecommerce.server.config.p6spy.P6SpyFormatter;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +21,7 @@ import java.util.Optional;
 public class InfrastructureConfig {
 
     @Bean
-    public JwtUtils jwtUtils(@Value("${nodeblack.security.token.secret-key}") String secretKey) {
+    public JwtUtils jwtUtils(@Value("${hhplus.security.token.secret-key}") String secretKey) {
         return new JwtUtils(secretKey);
     }
 
