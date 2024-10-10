@@ -1,11 +1,11 @@
 package hhplus.ecommerce.server.interfaces.item;
 
-import hhplus.ecommerce.server.application.common.model.pagination.PageInfo;
+import hhplus.ecommerce.server.application.common.pagination.PageInfo;
 import hhplus.ecommerce.server.interfaces.item.model.request.ItemPageSearchCond;
 import hhplus.ecommerce.server.interfaces.item.model.response.ItemDetail;
 import hhplus.ecommerce.server.interfaces.item.model.response.ItemPageResult;
 import hhplus.ecommerce.server.interfaces.item.model.response.ItemSummary;
-import hhplus.ecommerce.server.global.web.api.ApiResponse;
+import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;

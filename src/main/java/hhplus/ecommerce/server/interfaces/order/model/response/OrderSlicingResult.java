@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.order.model.response;
 
-import hhplus.ecommerce.server.application.common.model.slicing.SlicingInfo;
+import hhplus.ecommerce.server.application.common.slicing.SlicingInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

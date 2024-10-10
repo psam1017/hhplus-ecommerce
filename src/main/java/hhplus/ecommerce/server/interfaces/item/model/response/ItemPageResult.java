@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.item.model.response;
 
-import hhplus.ecommerce.server.application.common.model.pagination.PageInfo;
+import hhplus.ecommerce.server.application.common.pagination.PageInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

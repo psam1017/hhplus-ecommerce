@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.interfaces.order.model.response;
 
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
-import hhplus.ecommerce.server.global.web.jsonformat.KoreanDateTime;
+import hhplus.ecommerce.server.interfaces.common.jsonformat.KoreanDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

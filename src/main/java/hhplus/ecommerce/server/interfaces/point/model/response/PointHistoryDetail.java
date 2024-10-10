@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.point.model.response;
 
-import hhplus.ecommerce.server.global.web.jsonformat.KoreanDateTime;
+import hhplus.ecommerce.server.interfaces.common.jsonformat.KoreanDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

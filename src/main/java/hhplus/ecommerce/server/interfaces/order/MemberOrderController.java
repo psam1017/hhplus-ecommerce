@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.order;
 
-import hhplus.ecommerce.server.application.common.model.slicing.SlicingInfo;
+import hhplus.ecommerce.server.application.common.slicing.SlicingInfo;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.interfaces.order.model.request.OrderPost;
 import hhplus.ecommerce.server.interfaces.order.model.request.OrderSlicingSearchCond;
@@ -8,8 +8,8 @@ import hhplus.ecommerce.server.interfaces.order.model.response.OrderDetail;
 import hhplus.ecommerce.server.interfaces.order.model.response.OrderIdResponse;
 import hhplus.ecommerce.server.interfaces.order.model.response.OrderSlicingResult;
 import hhplus.ecommerce.server.interfaces.order.model.response.OrderSummary;
-import hhplus.ecommerce.server.global.web.argument.UserId;
-import hhplus.ecommerce.server.global.web.api.ApiResponse;
+import hhplus.ecommerce.server.interfaces.common.argument.UserId;
+import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;

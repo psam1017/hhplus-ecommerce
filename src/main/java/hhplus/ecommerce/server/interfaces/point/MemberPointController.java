@@ -1,10 +1,10 @@
 package hhplus.ecommerce.server.interfaces.point;
 
-import hhplus.ecommerce.server.application.common.model.slicing.SlicingInfo;
+import hhplus.ecommerce.server.application.common.slicing.SlicingInfo;
 import hhplus.ecommerce.server.interfaces.point.model.requqest.PointChargePost;
 import hhplus.ecommerce.server.interfaces.point.model.requqest.PointHistorySlicingSearchCond;
-import hhplus.ecommerce.server.global.web.argument.UserId;
-import hhplus.ecommerce.server.global.web.api.ApiResponse;
+import hhplus.ecommerce.server.interfaces.common.argument.UserId;
+import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
 import hhplus.ecommerce.server.interfaces.point.model.response.PointHistoryDetail;
 import hhplus.ecommerce.server.interfaces.point.model.response.PointDetail;
 import hhplus.ecommerce.server.interfaces.point.model.response.PointHistorySlicingResult;

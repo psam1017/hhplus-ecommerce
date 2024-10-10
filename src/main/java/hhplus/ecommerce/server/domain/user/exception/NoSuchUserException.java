@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.domain.user.exception;
 
-import hhplus.ecommerce.server.global.web.api.ApiException;
-import hhplus.ecommerce.server.global.web.api.ApiResponse;
+import hhplus.ecommerce.server.interfaces.common.api.ApiException;
+import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
 
 public class NoSuchUserException extends ApiException {
     @Override

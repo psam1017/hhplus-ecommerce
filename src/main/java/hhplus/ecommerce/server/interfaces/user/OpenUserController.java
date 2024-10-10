@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.user;
 
-import hhplus.ecommerce.server.global.web.api.ApiResponse;
+import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
 import hhplus.ecommerce.server.interfaces.user.model.request.UserLoginPost;
 import hhplus.ecommerce.server.interfaces.user.model.response.UserLoginResult;
 import jakarta.validation.Valid;

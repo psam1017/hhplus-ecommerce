@@ -97,8 +97,8 @@
   <summary>API Spec</summary>
 
 - Rest Docs 와 Swagger 의 전체 내용은 인쇄본을 통해 확인하실 수 있습니다.
-  - [Rest-Docs]()
-  - [Swagger-UI]()
+  - [Rest-Docs 인쇄본](https://github.com/psam1017/hhplus-ecommerce/tree/STEP6/docs/api-docs/rest-docs)
+  - [Swagger-UI 인쇄본](https://github.com/psam1017/hhplus-ecommerce/tree/STEP6/docs/api-docs/swagger)
 
 - Rest Docs 에서 API Spec 을 확인하실 수 있습니다.
 
@@ -152,6 +152,11 @@
 ```
 /
 ├── interfaces
+│   ├── common
+│   │   ├── interceptor
+│   │   ├── security
+│   │   ├── validator
+│   │   └── ...
 │   └── (도메인)
 │       ├── Controller.java
 │       └── dto
@@ -160,11 +165,13 @@
 │           └── response
 │               └── Response.java
 ├── application
+│   ├── common
 │   └── (도메인)
 │       ├── Facade.java
 │       ├── Command.java
 │       └── Info.java
 ├── domain
+│   ├── common
 │   └── (도메인)
 │       ├── Entity.java
 │       ├── Service.java
@@ -176,21 +183,14 @@
 │           └── Repository.java
 ├── infrastructure
 │   ├── jwt
-│   │   └── JwtUtils.java
 │   └── persistence
 │       └── (도메인)
 │           ├── jpa
 │           │   ├── JpaRepository.java
 │           │   └── QueryDslRepository.java
 │           └── RepositoryImpl.java
-└── global
-    ├── config
-    │   └── Config.java
-    └── web
-        ├── interceptor
-        ├── security
-        ├── validator
-        └── ...
+└── config
+    └── Config.java
 ```
 
 </details>
