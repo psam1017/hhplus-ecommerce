@@ -1,9 +1,0 @@
-=== 상품 목록 조회하기
-
-==== HTTP Request
-include::{snippets}/item-controller-docs-test/find-items/http-request.adoc[]
-include::{snippets}/item-controller-docs-test/find-items/query-parameters.adoc[]
-
-==== HTTP Response
-include::{snippets}/item-controller-docs-test/find-items/http-response.adoc[]
-include::{snippets}/item-controller-docs-test/find-items/response-fields.adoc[]

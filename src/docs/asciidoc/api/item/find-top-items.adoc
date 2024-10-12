@@ -1,8 +1,0 @@
-=== 상품 매출 상위 목록 조회하기
-
-==== HTTP Request
-include::{snippets}/item-controller-docs-test/find-top-items/http-request.adoc[]
-
-==== HTTP Response
-include::{snippets}/item-controller-docs-test/find-top-items/http-response.adoc[]
-include::{snippets}/item-controller-docs-test/find-top-items/response-fields.adoc[]

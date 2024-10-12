@@ -1,9 +1,0 @@
-=== 포인트 잔액 조회하기
-
-==== HTTP Request
-include::{snippets}/point-controller-docs-test/get-point-balance/http-request.adoc[]
-include::{snippets}/point-controller-docs-test/get-point-balance/request-headers.adoc[]
-
-==== HTTP Response
-include::{snippets}/point-controller-docs-test/get-point-balance/http-response.adoc[]
-include::{snippets}/point-controller-docs-test/get-point-balance/response-fields.adoc[]
