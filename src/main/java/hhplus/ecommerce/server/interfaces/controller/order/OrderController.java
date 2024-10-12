@@ -1,27 +1,58 @@
 package hhplus.ecommerce.server.interfaces.controller.order;
 
 import hhplus.ecommerce.server.application.OrderFacade;
-import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(
+        name = "주문",
+        description = "사용자의 주문에 대한 API"
+)
 @RequiredArgsConstructor
-@RequestMapping("/api/users/{userId}orders")
+@RequestMapping("/api/users/{userId}/orders")
 @RestController
 public class OrderController {
 
     private final OrderFacade orderFacade;
 
+    @Operation(
+            summary = "주문 생성",
+            description = "특정 사용자의 주문을 생성합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "주문 생성 정보",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = OrderDto.OrderCreate.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "생성된 주문의 ID",
+                            content = @Content(
+                                    schema = @Schema(implementation = OrderDto.OrderIdResponse.class)
+                            )
+                    )
+            }
+    )
     @PostMapping("")
-    public ApiResponse<OrderDto.OrderIdResponse> doOrder(
+    public OrderDto.OrderIdResponse doOrder(
             @PathVariable Long userId,
             @RequestBody @Valid OrderDto.OrderCreate post
     ) {
-        return ApiResponse.ok(
-                OrderDto.OrderIdResponse.builder()
-                        .id(orderFacade.doOrder(userId, post))
-                        .build()
-        );
+        return OrderDto.OrderIdResponse.builder()
+                .id(orderFacade.doOrder(userId, post))
+                .build();
     }
 }

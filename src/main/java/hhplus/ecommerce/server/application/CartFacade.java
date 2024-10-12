@@ -17,7 +17,7 @@ public class CartFacade {
         return null;
     }
 
-    public void deleteCartItem(Long userId, Long itemId) {
-
+    public CartInfo.CartDetail deleteCartItem(Long userId, Long itemId) {
+        return null;
     }
 }

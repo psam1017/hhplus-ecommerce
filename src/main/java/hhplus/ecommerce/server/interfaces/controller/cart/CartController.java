@@ -1,12 +1,21 @@
 package hhplus.ecommerce.server.interfaces.controller.cart;
 
 import hhplus.ecommerce.server.application.CartFacade;
-import hhplus.ecommerce.server.interfaces.common.api.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+@Tag(
+        name = "장바구니",
+        description = "사용자의 장바구니에 대한 API"
+)
 @RequiredArgsConstructor
 @RequestMapping("/api/users/{userId}/carts")
 @RestController
@@ -14,42 +23,88 @@ public class CartController {
 
     private final CartFacade cartFacade;
 
+    @Operation(
+            summary = "장바구니에 항목 추가 또는 업데이트",
+            description = "특정 사용자 장바구니에 항목을 추가하거나 업데이트합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH),
+                    @Parameter(name = "itemId", description = "항목의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            requestBody = @RequestBody(
+                    description = "업데이트할 장바구니 항목 정보",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = CartDto.CartItemPut.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "업데이트된 장바구니 항목",
+                            content = @Content(
+                                    schema = @Schema(implementation = CartDto.CartItemResponse.class)
+                            )
+                    )
+            }
+    )
     @PutMapping("/{itemId}")
-    public ApiResponse<CartDto.CartItemResponse> putItemIntoCart(
+    public CartDto.CartItemResponse putItemIntoCart(
             @PathVariable Long userId,
             @PathVariable Long itemId,
             @RequestBody CartDto.CartItemPut request
     ) {
-        return ApiResponse.ok(
-                CartDto.CartItemResponse.from(
+        return CartDto.CartItemResponse.from(
                         cartFacade.putItem(userId, itemId, request.amount())
-                )
-        );
+                );
     }
 
+    @Operation(
+            summary = "장바구니 항목 조회",
+            description = "특정 사용자의 장바구니에 있는 모든 항목을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "장바구니 항목 목록",
+                            content = @Content(
+                                    schema = @Schema(implementation = CartDto.CartItemResponseList.class)
+                            )
+                    )
+            }
+    )
     @GetMapping("")
-    public ApiResponse<List<CartDto.CartItemResponse>> getCartItems(
+    public CartDto.CartItemResponseList getCartItems(
             @PathVariable Long userId
     ) {
-        return ApiResponse.ok(
-                cartFacade.getCartItems(userId).stream()
-                        .map(item -> CartDto.CartItemResponse.builder()
-                                .id(item.id())
-                                .name(item.name())
-                                .price(item.price())
-                                .amount(item.amount())
-                                .build()
-                        )
-                        .toList()
-        );
+        return CartDto.CartItemResponseList.from(cartFacade.getCartItems(userId));
     }
 
+    @Operation(
+            summary = "장바구니 항목 삭제",
+            description = "특정 사용자의 장바구니에서 항목을 삭제합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH),
+                    @Parameter(name = "itemId", description = "삭제할 항목의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "성공적으로 삭제됨",
+                            content = @Content(
+                                    schema = @Schema(implementation = CartDto.CartItemDeleteResponse.class)
+                            )
+                    )
+            }
+    )
     @DeleteMapping("/{itemId}")
-    public ApiResponse<String> deleteItemFromCart(
+    public CartDto.CartItemDeleteResponse deleteItemFromCart(
             @PathVariable Long userId,
             @PathVariable Long itemId
     ) {
-        cartFacade.deleteCartItem(userId, itemId);
-        return ApiResponse.ok("OK");
+        return CartDto.CartItemDeleteResponse.from(
+                cartFacade.deleteCartItem(userId, itemId)
+        );
     }
 }
