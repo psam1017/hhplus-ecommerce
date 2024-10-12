@@ -5,8 +5,6 @@
 - **Spring Boot**
     - Spring Web
     - Spring Validation
-    - Spring Security
-    - Jwt
     - Spring Data JPA
     - Query DSL
 
@@ -23,7 +21,6 @@
 - **Grafana**
 
 ### Documentation
-- **Spring Rest Docs**
 - **Swagger**
 
 ### Test

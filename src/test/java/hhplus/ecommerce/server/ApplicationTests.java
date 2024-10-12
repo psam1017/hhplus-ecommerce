@@ -2,26 +2,22 @@ package hhplus.ecommerce.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hhplus.ecommerce.server.spring.component.PersistenceContextManager;
-import hhplus.ecommerce.server.spring.config.RestDocsConfig;
-import org.junit.jupiter.api.extension.ExtendWith;
+import hhplus.ecommerce.server.support.PersistenceContextManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.function.Supplier;
 
-@ExtendWith(RestDocumentationExtension.class)
-@Import(RestDocsConfig.class)
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
 @SpringBootTest
 public class ApplicationTests {
+
+	@Autowired
+	protected MockMvc mockMvc;
 
 	@Autowired
 	private PersistenceContextManager persistenceContextManager;

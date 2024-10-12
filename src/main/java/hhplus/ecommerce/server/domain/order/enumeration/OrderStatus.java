@@ -1,12 +1,9 @@
 package hhplus.ecommerce.server.domain.order.enumeration;
 
-import hhplus.ecommerce.server.domain.common.enumeration.Documentable;
-
 import java.util.Objects;
 
-public enum OrderStatus implements Documentable {
+public enum OrderStatus {
 
-    // 주문실패, 배송관련 상태 추가 가능
     ORDERED("주문완료"),
     ALL_CANCELLED("전체취소"),
     PARTIAL_CANCELLED("부분취소"),
@@ -19,12 +16,10 @@ public enum OrderStatus implements Documentable {
         this.value = value;
     }
 
-    @Override
     public String key() {
         return this.name();
     }
 
-    @Override
     public String value() {
         return this.value;
     }
