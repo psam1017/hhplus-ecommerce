@@ -15,7 +15,11 @@ public class CartController {
     private final CartFacade cartFacade;
 
     @PutMapping("/{itemId}")
-    public ApiResponse<CartDto.CartItemResponse> putItemIntoCart(@PathVariable Long userId, @PathVariable Long itemId, @RequestBody CartDto.CartItemUpsertRequest request) {
+    public ApiResponse<CartDto.CartItemResponse> putItemIntoCart(
+            @PathVariable Long userId,
+            @PathVariable Long itemId,
+            @RequestBody CartDto.CartItemPut request
+    ) {
         return ApiResponse.ok(
                 CartDto.CartItemResponse.from(
                         cartFacade.putItem(userId, itemId, request.amount())
@@ -24,7 +28,9 @@ public class CartController {
     }
 
     @GetMapping("")
-    public ApiResponse<List<CartDto.CartItemResponse>> getCartItems(@PathVariable Long userId) {
+    public ApiResponse<List<CartDto.CartItemResponse>> getCartItems(
+            @PathVariable Long userId
+    ) {
         return ApiResponse.ok(
                 cartFacade.getCartItems(userId).stream()
                         .map(item -> CartDto.CartItemResponse.builder()
@@ -39,7 +45,10 @@ public class CartController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ApiResponse<String> deleteItemFromCart(@PathVariable Long userId, @PathVariable Long itemId) {
+    public ApiResponse<String> deleteItemFromCart(
+            @PathVariable Long userId,
+            @PathVariable Long itemId
+    ) {
         cartFacade.deleteCartItem(userId, itemId);
         return ApiResponse.ok("OK");
     }

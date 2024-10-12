@@ -25,7 +25,7 @@ public class CartDto {
         }
     }
 
-    public record CartItemUpsertRequest(
+    public record CartItemPut(
             @NotNull Integer amount
     ) {
     }
