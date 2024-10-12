@@ -18,7 +18,7 @@ public class CartController {
     public ApiResponse<CartDto.CartItemResponse> putItemIntoCart(
             @PathVariable Long userId,
             @PathVariable Long itemId,
-            @RequestBody CartDto.CartItemUpsertRequest request
+            @RequestBody CartDto.CartItemPut request
     ) {
         return ApiResponse.ok(
                 CartDto.CartItemResponse.from(
