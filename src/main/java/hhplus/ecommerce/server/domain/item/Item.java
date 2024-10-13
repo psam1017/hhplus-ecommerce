@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.domain.user;
+package hhplus.ecommerce.server.domain.item;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -8,20 +8,24 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(name = "items")
 @Entity
-public class User {
-
-    // 도메인, Repository, Service 만들고 이 3개에 대한 테스트 작성
+public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
+    private String name;
+
+    private int price;
+
+    @OneToOne(mappedBy = "item")
+    private ItemStock itemStock;
 
     @Builder
-    protected User(String username) {
-        this.username = username;
+    protected Item(String name, int price) {
+        this.name = name;
+        this.price = price;
     }
 }
