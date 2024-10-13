@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.application;
 
-import hhplus.ecommerce.server.domain.item.ItemInfo;
+import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.application;
 
-import hhplus.ecommerce.server.domain.order.OrderInfo;
+import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

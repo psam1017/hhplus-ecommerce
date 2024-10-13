@@ -1,20 +1,18 @@
 package hhplus.ecommerce.server.infrastructure.user;
 
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.domain.user.repository.UserQueryRepository;
-import hhplus.ecommerce.server.infrastructure.user.jpa.UserQueryDslRepository;
+import hhplus.ecommerce.server.domain.user.service.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 @Repository
-public class UserQueryRepositoryImpl implements UserQueryRepository {
+public class UserRepositoryImpl implements UserRepository {
 
-    private final UserQueryDslRepository userQueryDslRepository;
 
-    @Override
+
     public User getById(Long id) {
         return null;
     }

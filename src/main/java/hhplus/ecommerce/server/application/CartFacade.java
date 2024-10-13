@@ -1,9 +1,8 @@
 package hhplus.ecommerce.server.application;
 
-import hhplus.ecommerce.server.domain.cart.CartInfo;
+import hhplus.ecommerce.server.domain.cart.service.CartInfo;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 
 @Service

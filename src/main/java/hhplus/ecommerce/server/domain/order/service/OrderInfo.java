@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.domain.order;
+package hhplus.ecommerce.server.domain.order.service;
 
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 

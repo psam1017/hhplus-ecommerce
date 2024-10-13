@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.controller.order;
 
-import hhplus.ecommerce.server.domain.order.OrderInfo;
+import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.interfaces.common.jsonformat.KoreanDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;

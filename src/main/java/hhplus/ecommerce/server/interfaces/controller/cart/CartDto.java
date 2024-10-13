@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.controller.cart;
 
-import hhplus.ecommerce.server.domain.cart.CartInfo;
+import hhplus.ecommerce.server.domain.cart.service.CartInfo;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.experimental.UtilityClass;

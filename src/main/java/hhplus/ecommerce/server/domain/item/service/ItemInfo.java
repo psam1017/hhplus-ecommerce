@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.domain.item;
+package hhplus.ecommerce.server.domain.item.service;
 
 public class ItemInfo {
 

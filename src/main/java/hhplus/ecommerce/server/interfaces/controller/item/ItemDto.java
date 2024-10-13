@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.interfaces.controller.item;
 
-import hhplus.ecommerce.server.domain.item.ItemInfo;
+import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.experimental.UtilityClass;

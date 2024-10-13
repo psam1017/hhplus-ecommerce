@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.domain.cart;
+package hhplus.ecommerce.server.domain.cart.service;
 
 public class CartInfo {
 
