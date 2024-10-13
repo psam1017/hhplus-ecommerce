@@ -76,4 +76,29 @@ public class OrderController {
     ) {
         return OrderDto.OrderListResponse.from(orderFacade.getOrders(userId));
     }
+
+    @Operation(
+            summary = "주문 조회",
+            description = "특정 사용자의 주문을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH),
+                    @Parameter(name = "orderId", description = "주문의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "주문 정보",
+                            content = @Content(
+                                    schema = @Schema(implementation = OrderDto.OrderAndItemResponse.class)
+                            )
+                    )
+            }
+    )
+    @GetMapping("/{orderId}")
+    public OrderDto.OrderAndItemResponse getOrder(
+            @PathVariable Long userId,
+            @PathVariable Long orderId
+    ) {
+        return OrderDto.OrderAndItemResponse.from(orderFacade.getOrder(userId, orderId));
+    }
 }

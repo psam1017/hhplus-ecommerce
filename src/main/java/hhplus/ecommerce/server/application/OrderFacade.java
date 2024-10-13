@@ -15,4 +15,8 @@ public class OrderFacade {
     public List<OrderInfo.OrderDetail> getOrders(Long userId) {
         return null;
     }
+
+    public OrderInfo.OrderAndItemDetail getOrder(Long userId, Long orderId) {
+        return null;
+    }
 }

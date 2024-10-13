@@ -72,4 +72,43 @@ public class OrderDto {
             );
         }
     }
+
+    public record OrderItemResponse(
+            @Schema(name = "id", description = "상품 ID", example = "101")
+            Long id,
+            @Schema(name = "name", description = "상품 이름", example = "상품 A")
+            String name,
+            @Schema(name = "price", description = "상품 가격", example = "5000")
+            Integer price,
+            @Schema(name = "quantity", description = "상품 수량", example = "2")
+            Integer quantity
+    ) {
+    }
+
+    public record OrderAndItemResponse(
+            @Schema(name = "order", description = "주문 정보")
+            OrderResponse order,
+            @Schema(name = "items", description = "주문 상품 목록")
+            List<OrderItemResponse> items
+    ) {
+        public static OrderAndItemResponse from(OrderInfo.OrderAndItemDetail orderAndItemDetail) {
+            return new OrderAndItemResponse(
+                    new OrderResponse(
+                            orderAndItemDetail.orderDetail().id(),
+                            orderAndItemDetail.orderDetail().orderDateTime(),
+                            orderAndItemDetail.orderDetail().title(),
+                            orderAndItemDetail.orderDetail().status(),
+                            orderAndItemDetail.orderDetail().amount()
+                    ),
+                    orderAndItemDetail.orderItemDetail().stream()
+                            .map(orderItemDetail -> new OrderItemResponse(
+                                    orderItemDetail.id(),
+                                    orderItemDetail.name(),
+                                    orderItemDetail.price(),
+                                    orderItemDetail.quantity()
+                            ))
+                            .toList()
+            );
+        }
+    }
 }
