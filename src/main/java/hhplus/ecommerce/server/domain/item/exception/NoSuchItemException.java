@@ -1,0 +1,9 @@
+package hhplus.ecommerce.server.domain.item.exception;
+
+import hhplus.ecommerce.server.interfaces.common.api.ApiException;
+
+public class NoSuchItemException extends ApiException {
+    public NoSuchItemException() {
+        super("존재하지 않는 상품입니다.");
+    }
+}
