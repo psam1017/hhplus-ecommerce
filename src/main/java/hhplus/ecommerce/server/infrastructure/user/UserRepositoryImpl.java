@@ -6,14 +6,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Transactional
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
+    private final UserJpaRepository userJpaRepository;
 
-
-    public User getById(Long id) {
-        return null;
+    @Override
+    public Optional<User> findById(Long userId) {
+        return userJpaRepository.findById(userId);
     }
 }
