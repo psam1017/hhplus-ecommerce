@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "orders")
+@Table(name = "order_items")
 @Entity
 public class OrderItem {
 
@@ -30,7 +30,8 @@ public class OrderItem {
     private Item item;
 
     @Builder
-    protected OrderItem(String name, int price, int quantity, Order order, Item item) {
+    protected OrderItem(Long id, String name, int price, int quantity, Order order, Item item) {
+        this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;

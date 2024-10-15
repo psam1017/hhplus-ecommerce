@@ -20,11 +20,9 @@ public class Item {
 
     private int price;
 
-    @OneToOne(mappedBy = "item")
-    private ItemStock itemStock;
-
     @Builder
-    protected Item(String name, int price) {
+    protected Item(Long id, String name, int price) {
+        this.id = id;
         this.name = name;
         this.price = price;
     }

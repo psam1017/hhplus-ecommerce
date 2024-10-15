@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.domain.point;
 
+import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -24,8 +25,20 @@ public class Point {
     private User user;
 
     @Builder
-    protected Point(int amount, User user) {
+    protected Point(Long id, int amount, User user) {
+        this.id = id;
         this.amount = amount;
         this.user = user;
+    }
+
+    public void charge(int amount) {
+        this.amount += amount;
+    }
+
+    public void usePoint(int amount) {
+        if (this.amount < amount) {
+            throw new OutOfPointException(this.amount);
+        }
+        this.amount -= amount;
     }
 }

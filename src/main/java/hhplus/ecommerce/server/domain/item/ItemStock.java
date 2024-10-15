@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.domain.item;
 
+import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -23,8 +24,20 @@ public class ItemStock {
     private Item item;
 
     @Builder
-    protected ItemStock(int amount, Item item) {
+    protected ItemStock(Long id, int amount, Item item) {
+        this.id = id;
         this.amount = amount;
         this.item = item;
+    }
+
+    public void deductStock(Integer amount) {
+        checkStock(amount);
+        this.amount -= amount;
+    }
+
+    public void checkStock(Integer amount) {
+        if (this.amount < amount) {
+            throw new OutOfItemStockException(this.amount);
+        }
     }
 }

@@ -30,7 +30,8 @@ public class Order {
     private User user;
 
     @Builder
-    protected Order(OrderStatus status, LocalDateTime orderDateTime, User user) {
+    protected Order(Long id, OrderStatus status, LocalDateTime orderDateTime, User user) {
+        this.id = id;
         this.status = status;
         this.orderDateTime = orderDateTime;
         this.user = user;

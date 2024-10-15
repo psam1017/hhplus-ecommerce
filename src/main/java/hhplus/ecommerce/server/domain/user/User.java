@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class User {
 
-    // 도메인, Repository, Service 만들고 이 3개에 대한 테스트 작성
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +19,8 @@ public class User {
     private String username;
 
     @Builder
-    protected User(String username) {
+    protected User(Long id, String username) {
+        this.id = id;
         this.username = username;
     }
 }

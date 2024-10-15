@@ -1,7 +1,6 @@
 package hhplus.ecommerce.server.domain.cart;
 
 import hhplus.ecommerce.server.domain.item.Item;
-import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,9 +29,14 @@ public class Cart {
     private Item item;
 
     @Builder
-    protected Cart(int quantity, User user, Item item) {
+    protected Cart(Long id, int quantity, User user, Item item) {
+        this.id = id;
         this.quantity = quantity;
         this.user = user;
         this.item = item;
+    }
+
+    public void putQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }
