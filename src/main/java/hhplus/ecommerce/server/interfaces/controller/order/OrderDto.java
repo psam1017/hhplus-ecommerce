@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.interfaces.controller.order;
 
-import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
+import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.interfaces.common.jsonformat.KoreanDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -45,8 +45,6 @@ public class OrderDto {
             @Schema(name = "orderDateTime", description = "주문 일시", example = "2021-08-01T12:34:56")
             @KoreanDateTime
             LocalDateTime orderDateTime,
-            @Schema(name = "orderTitle", description = "주문 제목", example = "상품 A 외 1건")
-            String orderTitle,
             @Schema(name = "orderStatus", description = "주문 상태", example = "ORDERED")
             OrderStatus orderStatus,
             @Schema(name = "orderAmount", description = "주문 금액", example = "10000")
@@ -64,7 +62,6 @@ public class OrderDto {
                             .map(order -> new OrderResponse(
                                     order.id(),
                                     order.orderDateTime(),
-                                    order.title(),
                                     order.status(),
                                     order.amount()
                             ))
@@ -85,22 +82,21 @@ public class OrderDto {
     ) {
     }
 
-    public record OrderAndItemResponse(
+    public record OrderAndOrderItemsResponse(
             @Schema(name = "order", description = "주문 정보")
             OrderResponse order,
             @Schema(name = "items", description = "주문 상품 목록")
             List<OrderItemResponse> items
     ) {
-        public static OrderAndItemResponse from(OrderInfo.OrderAndItemDetail orderAndItemDetail) {
-            return new OrderAndItemResponse(
+        public static OrderAndOrderItemsResponse from(OrderInfo.OrderAndItemDetails orderAndItemDetails) {
+            return new OrderAndOrderItemsResponse(
                     new OrderResponse(
-                            orderAndItemDetail.orderDetail().id(),
-                            orderAndItemDetail.orderDetail().orderDateTime(),
-                            orderAndItemDetail.orderDetail().title(),
-                            orderAndItemDetail.orderDetail().status(),
-                            orderAndItemDetail.orderDetail().amount()
+                            orderAndItemDetails.orderDetail().id(),
+                            orderAndItemDetails.orderDetail().orderDateTime(),
+                            orderAndItemDetails.orderDetail().status(),
+                            orderAndItemDetails.orderDetail().amount()
                     ),
-                    orderAndItemDetail.orderItemDetail().stream()
+                    orderAndItemDetails.orderItemDetails().stream()
                             .map(orderItemDetail -> new OrderItemResponse(
                                     orderItemDetail.id(),
                                     orderItemDetail.name(),

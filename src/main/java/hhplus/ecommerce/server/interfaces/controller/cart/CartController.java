@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.interfaces.controller.cart;
 
 import hhplus.ecommerce.server.application.CartFacade;
+import hhplus.ecommerce.server.domain.cart.service.CartCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,11 +53,9 @@ public class CartController {
     public CartDto.CartItemResponse putItemIntoCart(
             @PathVariable Long userId,
             @PathVariable Long itemId,
-            @RequestBody CartDto.CartItemPut request
+            @RequestBody @Valid CartDto.CartItemPut request
     ) {
-        return CartDto.CartItemResponse.from(
-                        cartFacade.putItem(userId, itemId, request.amount())
-                );
+        return CartDto.CartItemResponse.from(cartFacade.putItem(new CartCommand.PutItem(userId, itemId, request.amount())));
     }
 
     @Operation(

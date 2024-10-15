@@ -59,10 +59,8 @@ public class CartDto {
             @Schema(name = "id", description = "장바구니 항목의 고유 식별자", example = "101")
             Long id
     ) {
-        public static CartItemDeleteResponse from(CartInfo.CartDetail cartDetail) {
-            return new CartItemDeleteResponse(
-                    cartDetail.id()
-            );
+        public static CartItemDeleteResponse from(Long cartId) {
+            return new CartItemDeleteResponse(cartId);
         }
     }
 }

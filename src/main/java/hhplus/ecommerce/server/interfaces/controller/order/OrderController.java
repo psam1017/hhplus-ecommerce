@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.interfaces.controller.order;
 
 import hhplus.ecommerce.server.application.OrderFacade;
+import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -47,11 +48,18 @@ public class OrderController {
             }
     )
     @PostMapping("")
-    public OrderDto.OrderIdResponse doOrder(
+    public OrderDto.OrderIdResponse createOrder(
             @PathVariable Long userId,
             @RequestBody @Valid OrderDto.OrderCreate post
     ) {
-        return new OrderDto.OrderIdResponse(orderFacade.doOrder(userId, post));
+        return new OrderDto.OrderIdResponse(orderFacade.createOrder(
+                new OrderCommand.CreateOrder(
+                        userId,
+                        post.items().stream()
+                                .map(item -> new OrderCommand.CreateOrderItem(item.itemId(), item.amount()))
+                                .toList()
+                )
+        ));
     }
 
     @Operation(
@@ -74,7 +82,7 @@ public class OrderController {
     public OrderDto.OrderListResponse getOrders(
             @PathVariable Long userId
     ) {
-        return OrderDto.OrderListResponse.from(orderFacade.getOrders(userId));
+        return OrderDto.OrderListResponse.from(orderFacade.findOrders(userId));
     }
 
     @Operation(
@@ -89,16 +97,16 @@ public class OrderController {
                             responseCode = "200",
                             description = "주문 정보",
                             content = @Content(
-                                    schema = @Schema(implementation = OrderDto.OrderAndItemResponse.class)
+                                    schema = @Schema(implementation = OrderDto.OrderAndOrderItemsResponse.class)
                             )
                     )
             }
     )
     @GetMapping("/{orderId}")
-    public OrderDto.OrderAndItemResponse getOrder(
+    public OrderDto.OrderAndOrderItemsResponse getOrder(
             @PathVariable Long userId,
             @PathVariable Long orderId
     ) {
-        return OrderDto.OrderAndItemResponse.from(orderFacade.getOrder(userId, orderId));
+        return OrderDto.OrderAndOrderItemsResponse.from(orderFacade.getOrder(userId, orderId));
     }
 }

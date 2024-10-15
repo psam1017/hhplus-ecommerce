@@ -10,7 +10,7 @@ public class PointDto {
     public record PointCreate(
             @NotNull
             @Schema(name = "chargeAmount", description = "충전할 포인트 금액", example = "10000")
-            Long chargeAmount
+            Integer chargeAmount
     ) {
     }
 
