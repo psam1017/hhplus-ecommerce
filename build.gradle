@@ -60,6 +60,10 @@ dependencies {
 	testImplementation 'org.reflections:reflections:0.10.2'
 }
 
+test {
+	useJUnitPlatform()
+}
+
 // 전역 변수 설정 시작
 ext {
 	queryDslVersion = "5.0.0"
