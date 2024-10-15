@@ -123,7 +123,7 @@ public class OrderFacadeTest extends ServiceTestEnvironment {
         assertThat(result).hasSize(1)
                 .extracting(o -> tuple(o.id(), o.amount(), o.status()))
                 .containsExactly(
-                        tuple(user.getId(), 50000, OrderStatus.ORDERED)
+                        tuple(order.getId(), 50000, OrderStatus.ORDERED)
                 );
     }
 
