@@ -148,13 +148,11 @@ public class ItemServiceUnitTest {
 
         when(itemRepository.findAllById(itemIds)).thenReturn(items);
 
-        NoSuchItemException exception = new NoSuchItemException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.findItems(itemIds))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchItemException.class)
+                .hasMessage(new NoSuchItemException().getMessage());
         verify(itemRepository, times(1)).findAllById(itemIds);
     }
 
@@ -205,13 +203,11 @@ public class ItemServiceUnitTest {
 
         when(itemStockRepository.findAllByItemIdWithLock(itemIds)).thenReturn(itemStocks);
 
-        NoSuchItemStockException exception = new NoSuchItemStockException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getItemStocksWithLock(itemIds))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
         verify(itemStockRepository, times(1)).findAllByItemIdWithLock(itemIds);
     }
 
@@ -243,13 +239,11 @@ public class ItemServiceUnitTest {
 
         when(itemRepository.findById(id)).thenReturn(Optional.empty());
 
-        NoSuchItemException exception = new NoSuchItemException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getItem(id))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchItemException.class)
+                .hasMessage(new NoSuchItemException().getMessage());
         verify(itemRepository, times(1)).findById(id);
     }
 
@@ -297,13 +291,11 @@ public class ItemServiceUnitTest {
 
         when(itemStockRepository.findAllByItemIds(itemIds)).thenReturn(itemStocks);
 
-        NoSuchItemStockException exception = new NoSuchItemStockException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getStocks(itemIds))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
         verify(itemStockRepository, times(1)).findAllByItemIds(itemIds);
     }
 
@@ -338,13 +330,11 @@ public class ItemServiceUnitTest {
 
         when(itemStockRepository.findByItemId(id)).thenReturn(Optional.empty());
 
-        NoSuchItemStockException exception = new NoSuchItemStockException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getItemStockByItemId(id))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
         verify(itemStockRepository, times(1)).findByItemId(id);
     }
 

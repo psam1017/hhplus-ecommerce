@@ -33,11 +33,11 @@ public class OrderInfo {
     ) {
     }
 
-    public record OrderAndItemDetail(
+    public record OrderAndItemDetails(
             OrderDetail orderDetail,
-            List<OrderItemDetail> orderItemDetail
+            List<OrderItemDetail> orderItemDetails
     ) {
-        public static OrderAndItemDetail from(Order order, List<OrderItem> orderItems) {
+        public static OrderAndItemDetails from(Order order, List<OrderItem> orderItems) {
             List<OrderItemDetail> orderItemDetails = orderItems.stream()
                     .map(orderItem -> new OrderItemDetail(
                             orderItem.getId(),
@@ -51,7 +51,7 @@ public class OrderInfo {
                     .mapToInt(orderItemDetail -> orderItemDetail.price() * orderItemDetail.quantity())
                     .sum();
 
-            return new OrderAndItemDetail(
+            return new OrderAndItemDetails(
                     new OrderDetail(
                             order.getId(),
                             order.getOrderDateTime(),

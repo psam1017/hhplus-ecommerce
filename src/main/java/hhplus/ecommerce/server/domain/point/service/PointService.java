@@ -13,12 +13,12 @@ public class PointService {
 
     private final PointRepository pointRepository;
 
-    public Point getPoint(Long userId) {
+    public Point getPointByUserId(Long userId) {
         return pointRepository.findByUserId(userId).orElseThrow(NoSuchPointException::new);
     }
 
-    public Point getPointWithLock(Long id) {
-        return pointRepository.findByIdWithLock(id).orElseThrow(NoSuchPointException::new);
+    public Point getPointByUserIdWithLock(Long userId) {
+        return pointRepository.findByUserIdWithLock(userId).orElseThrow(NoSuchPointException::new);
     }
 
     public Point chargePoint(Long userId, Integer amount) {

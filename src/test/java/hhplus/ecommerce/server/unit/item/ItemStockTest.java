@@ -3,11 +3,11 @@ package hhplus.ecommerce.server.unit.item;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ItemStockTest {
 
@@ -42,13 +42,11 @@ public class ItemStockTest {
                 .item(buildItem())
                 .build();
 
-        OutOfItemStockException exception = new OutOfItemStockException(leftAmount);
-
         // when
         // then
         assertThatThrownBy(() -> itemStock.deductStock(deductAmount))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(OutOfItemStockException.class)
+                .hasMessage(new OutOfItemStockException(leftAmount).getMessage());
     }
 
     @DisplayName("재고가 부족한지를 확인할 수 있다.")
@@ -63,13 +61,11 @@ public class ItemStockTest {
                 .item(buildItem())
                 .build();
 
-        OutOfItemStockException exception = new OutOfItemStockException(leftAmount);
-
         // when
         // then
         assertThatThrownBy(() -> itemStock.checkStock(deductAmount))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(OutOfItemStockException.class)
+                .hasMessage(new OutOfItemStockException(leftAmount).getMessage());
     }
 
     private Item buildItem() {

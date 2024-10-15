@@ -61,13 +61,11 @@ public class PointTest {
                 .user(buildUser())
                 .build();
 
-        OutOfPointException exception = new OutOfPointException(leftAmount);
-
         // when
         // then
         assertThatThrownBy(() -> point.usePoint(useAmount))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(OutOfPointException.class)
+                .hasMessage(new OutOfPointException(leftAmount).getMessage());
     }
 
     private static User buildUser() {

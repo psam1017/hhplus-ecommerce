@@ -53,13 +53,11 @@ public class UserServiceUnitTest {
         when(userRepository.findById(userId))
                 .thenReturn(Optional.empty());
 
-        NoSuchUserException exception = new NoSuchUserException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getUser(userId))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchUserException.class)
+                .hasMessage(new NoSuchUserException().getMessage());
         verify(userRepository, times(1)).findById(userId);
     }
 }

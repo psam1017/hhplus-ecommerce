@@ -135,13 +135,11 @@ public class OrderServiceUnitTest {
 
         when(orderRepository.findByIdAndUserId(orderId, userId)).thenReturn(Optional.empty());
 
-        NoSuchOrderException exception = new NoSuchOrderException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.getOrder(orderId, userId))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchOrderException.class)
+                .hasMessage(new NoSuchOrderException().getMessage());
         verify(orderRepository, times(1)).findByIdAndUserId(orderId, userId);
     }
 

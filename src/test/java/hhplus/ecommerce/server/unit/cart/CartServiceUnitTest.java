@@ -144,13 +144,11 @@ public class CartServiceUnitTest {
         when(cartRepository.findByUserIdAndItemId(userId, itemId))
                 .thenReturn(Optional.empty());
 
-        NoSuchCartException exception = new NoSuchCartException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.deleteCartItem(userId, itemId))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchCartException.class)
+                .hasMessage(new NoSuchCartException().getMessage());
         verify(cartRepository, times(1)).findByUserIdAndItemId(userId, itemId);
     }
 

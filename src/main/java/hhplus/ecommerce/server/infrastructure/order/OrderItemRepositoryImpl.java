@@ -31,11 +31,10 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     public Map<Long, Integer> findOrderAmounts(List<Long> orderIds) {
         List<Object[]> results = orderItemJpaRepository.findOrderAmounts(orderIds);
 
-        // 결과를 맵으로 변환하여 반환
         return results.stream()
                 .collect(Collectors.toMap(
-                        result -> (Long) result[0],  // 주문 ID
-                        result -> ((Number) result[1]).intValue()  // 수량 합계
+                        result -> (Long) result[0],
+                        result -> ((Number) result[1]).intValue()
                 ));
     }
 }

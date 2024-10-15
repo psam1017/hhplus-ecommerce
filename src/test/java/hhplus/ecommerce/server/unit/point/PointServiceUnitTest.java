@@ -37,7 +37,7 @@ public class PointServiceUnitTest {
                 .thenReturn(Optional.of(point));
 
         // when
-        Point result = sut.getPoint(userId);
+        Point result = sut.getPointByUserId(userId);
 
         // then
         assertThat(result).isEqualTo(point);
@@ -53,51 +53,12 @@ public class PointServiceUnitTest {
         when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.empty());
 
-        NoSuchPointException exception = new NoSuchPointException();
-
         // when
         // then
-        assertThatThrownBy(() -> sut.getPoint(userId))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+        assertThatThrownBy(() -> sut.getPointByUserId(userId))
+                .isInstanceOf(NoSuchPointException.class)
+                .hasMessage(new NoSuchPointException().getMessage());
         verify(pointRepository, times(1)).findByUserId(userId);
-    }
-
-    @DisplayName("락을 걸고 포인트를 조회할 수 있다.")
-    @Test
-    void getPointWithLock() {
-        // given
-        Long pointId = 1L;
-        Point point = Point.builder().build();
-
-        when(pointRepository.findByIdWithLock(pointId))
-                .thenReturn(Optional.of(point));
-
-        // when
-        Point result = sut.getPointWithLock(pointId);
-
-        // then
-        assertThat(result).isEqualTo(point);
-        verify(pointRepository, times(1)).findByIdWithLock(pointId);
-    }
-
-    @DisplayName("락을 걸고 포인트를 조회할 때 포인트가 존재하지 않으면 예외가 발생한다.")
-    @Test
-    void throwNoSuchPointExceptionWhenGetPointWithLock() {
-        // given
-        Long pointId = 1L;
-
-        when(pointRepository.findByIdWithLock(pointId))
-                .thenReturn(Optional.empty());
-
-        NoSuchPointException exception = new NoSuchPointException();
-
-        // when
-        // then
-        assertThatThrownBy(() -> sut.getPointWithLock(pointId))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
-        verify(pointRepository, times(1)).findByIdWithLock(pointId);
     }
 
     @DisplayName("포인트를 충전할 수 있다.")
@@ -129,13 +90,11 @@ public class PointServiceUnitTest {
         when(pointRepository.findByUserIdWithLock(userId))
                 .thenReturn(Optional.empty());
 
-        NoSuchPointException exception = new NoSuchPointException();
-
         // when
         // then
         assertThatThrownBy(() -> sut.chargePoint(userId, amount))
-                .isInstanceOf(exception.getClass())
-                .hasMessage(exception.getMessage());
+                .isInstanceOf(NoSuchPointException.class)
+                .hasMessage(new NoSuchPointException().getMessage());
         verify(pointRepository, times(1)).findByUserIdWithLock(userId);
     }
 }

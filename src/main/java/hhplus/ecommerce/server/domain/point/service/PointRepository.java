@@ -8,5 +8,4 @@ public interface PointRepository {
 
     Optional<Point> findByUserId(Long userId);
     Optional<Point> findByUserIdWithLock(Long userId);
-    Optional<Point> findByIdWithLock(Long id);
 }
