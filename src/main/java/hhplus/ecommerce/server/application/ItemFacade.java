@@ -1,18 +1,30 @@
 package hhplus.ecommerce.server.application;
 
+import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
-import org.springframework.stereotype.Service;
+import hhplus.ecommerce.server.domain.item.service.ItemService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Service
+@RequiredArgsConstructor
+@Component
 public class ItemFacade {
 
+    private final ItemService itemService;
+
     public List<ItemInfo.ItemDetail> findTopItems() {
-        return null;
+        List<Item> topItems = itemService.findTopItems();
+        Map<Long, Integer> stockMap = itemService.getStocks(topItems.stream().map(Item::getId).collect(Collectors.toSet()));
+        return ItemInfo.ItemDetail.from(topItems, stockMap);
     }
 
     public List<ItemInfo.ItemDetail> findItems() {
-        return null;
+        List<Item> items = itemService.findItems();
+        Map<Long, Integer> stockMap = itemService.getStocks(items.stream().map(Item::getId).collect(Collectors.toSet()));
+        return ItemInfo.ItemDetail.from(items, stockMap);
     }
 }
