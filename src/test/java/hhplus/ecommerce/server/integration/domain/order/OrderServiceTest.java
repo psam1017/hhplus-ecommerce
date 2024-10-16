@@ -6,6 +6,7 @@ import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
+import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
@@ -29,7 +30,7 @@ import static org.assertj.core.api.Assertions.*;
 public class OrderServiceTest extends ServiceTestEnvironment {
 
     @Autowired
-    OrderService orderService;
+    OrderService sut;
 
     @Autowired
     OrderJpaRepository orderJpaRepository;
@@ -48,42 +49,31 @@ public class OrderServiceTest extends ServiceTestEnvironment {
 
     @DisplayName("주문을 생성할 수 있다.")
     @Test
-    void createOrder() {
+    void createOrderAndItems() {
         // given
         User user = createUser("TestUser");
-        Order order = createOrder(user);
-
-        // when
-        Order result = orderService.createOrder(order);
-
-        // then
-        assertThat(result).isEqualTo(order);
-        assertThat(result.getUser().getId()).isEqualTo(user.getId());
-    }
-
-    @DisplayName("여러 주문 상품을 생성할 수 있다.")
-    @Test
-    void createOrderItems() {
-        // given
-        User user = createUser("TestUser");
-        Order order = createOrder(user);
         Item item1 = createItem("Item1", 1000);
         Item item2 = createItem("Item2", 2000);
-
-        List<OrderItem> orderItems = List.of(
-                OrderItem.builder().name("Item1").price(1000).quantity(1).order(order).item(item1).build(),
-                OrderItem.builder().name("Item2").price(2000).quantity(2).order(order).item(item2).build()
+        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+                user.getId(),
+                List.of(
+                        new OrderCommand.CreateOrderItem(item1.getId(), 1),
+                        new OrderCommand.CreateOrderItem(item2.getId(), 2)
+                )
         );
 
         // when
-        List<OrderItem> result = orderService.createOrderItems(orderItems);
+        Order result = sut.createOrderAndItems(command, user, List.of(item1, item2));
 
         // then
-        assertThat(result).hasSize(2)
-                .extracting("name", "price", "quantity")
+        assertThat(result.getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.ORDERED);
+        List<OrderItem> orderItems = orderItemJpaRepository.findAllByOrderId(result.getId());
+        assertThat(orderItems).hasSize(2)
+                .extracting(oi -> tuple(oi.getName(), oi.getPrice(), oi.getQuantity(), oi.getItem().getId()))
                 .containsExactly(
-                        tuple("Item1", 1000, 1),
-                        tuple("Item2", 2000, 2)
+                        tuple("Item1", 1000, 1, item1.getId()),
+                        tuple("Item2", 2000, 2, item2.getId())
                 );
     }
 
@@ -96,7 +86,7 @@ public class OrderServiceTest extends ServiceTestEnvironment {
         Order order2 = createOrder(user);
 
         // when
-        List<Order> result = orderService.findAllByUserId(user.getId());
+        List<Order> result = sut.findAllByUserId(user.getId());
 
         // then
         assertThat(result).hasSize(2)
@@ -115,7 +105,7 @@ public class OrderServiceTest extends ServiceTestEnvironment {
         Order order = createOrder(user);
 
         // when
-        Order result = orderService.getOrder(order.getId(), user.getId());
+        Order result = sut.getOrder(order.getId(), user.getId());
 
         // then
         assertThat(result).isEqualTo(order);
@@ -130,7 +120,7 @@ public class OrderServiceTest extends ServiceTestEnvironment {
 
         // when
         // then
-        assertThatThrownBy(() -> orderService.getOrder(orderId, userId))
+        assertThatThrownBy(() -> sut.getOrder(orderId, userId))
                 .isInstanceOf(NoSuchOrderException.class)
                 .hasMessage(new NoSuchOrderException().getMessage());
     }
@@ -147,7 +137,7 @@ public class OrderServiceTest extends ServiceTestEnvironment {
         OrderItem orderItem2 = createOrderItem("Item2", 2000, 2, order, item2);
 
         // when
-        List<OrderItem> result = orderService.findOrderItems(order.getId());
+        List<OrderItem> result = sut.findOrderItems(order.getId());
 
         // then
         assertThat(result).hasSize(2)
@@ -173,7 +163,7 @@ public class OrderServiceTest extends ServiceTestEnvironment {
         List<Long> orderIds = List.of(order1.getId(), order2.getId());
 
         // when
-        Map<Long, Integer> result = orderService.findOrderAmounts(orderIds);
+        Map<Long, Integer> result = sut.findOrderAmounts(orderIds);
 
         // then
         assertThat(result).hasSize(2)

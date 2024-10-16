@@ -1,8 +1,10 @@
 package hhplus.ecommerce.server.domain.order.service;
 
+import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
+import hhplus.ecommerce.server.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +20,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
-    public Order createOrder(Order order) {
-        return orderRepository.save(order);
-    }
-
-    public List<OrderItem> createOrderItems(List<OrderItem> orderItems) {
-        return orderItemRepository.saveAll(orderItems);
-    }
-
     public List<Order> findAllByUserId(Long userId) {
         return orderRepository.findAllByUserId(userId);
     }
@@ -40,5 +34,11 @@ public class OrderService {
 
     public Map<Long, Integer> findOrderAmounts(List<Long> orderIds) {
         return orderItemRepository.findOrderAmounts(orderIds);
+    }
+
+    public Order createOrderAndItems(OrderCommand.CreateOrder command, User user, List<Item> items) {
+        Order order = orderRepository.save(command.toOrder(user));
+        orderItemRepository.saveAll(command.toOrderItems(items, order));
+        return order;
     }
 }

@@ -5,6 +5,7 @@ import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
+import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
 import hhplus.ecommerce.server.domain.order.service.OrderRepository;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
@@ -38,47 +39,39 @@ public class OrderServiceUnitTest {
 
     @DisplayName("주문을 생성할 수 있다.")
     @Test
-    void createOrder() {
+    void createOrderAndItems() {
         // given
+        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+                1L,
+                List.of(
+                        new OrderCommand.CreateOrderItem(1L, 1),
+                        new OrderCommand.CreateOrderItem(2L, 2)
+                )
+        );
         User user = buildUser(1L);
-        Order order = buildOrder(1L, user);
+        List<Item> items = List.of(
+                buildItem(1L),
+                buildItem(2L)
+        );
 
-        when(orderRepository.save(order)).thenReturn(order);
+        Order order = buildOrder(1L, user);
+        List<OrderItem> orderItems = List.of(
+                buildOrderItem(1L, "Item1", 1000, 1, order, buildItem(1L)),
+                buildOrderItem(2L, "Item2", 2000, 2, order, buildItem(2L))
+        );
+
+        when(orderRepository.save(any()))
+                .thenReturn(order);
+        when(orderItemRepository.saveAll(anyList()))
+                .thenReturn(orderItems);
 
         // when
-        Order result = sut.createOrder(order);
+        Order result = sut.createOrderAndItems(command, user, items);
 
         // then
         assertThat(result).isEqualTo(order);
-        assertThat(result.getId()).isEqualTo((Long) 1L);
-        assertThat(result.getUser().getId()).isEqualTo((Long) 1L);
-        verify(orderRepository, times(1)).save(order);
-    }
-
-    @DisplayName("여러 주문 상품을 생성할 수 있다.")
-    @Test
-    void createOrderItems() {
-        // given
-        Order order = buildOrder(1L, buildUser(1L));
-
-        List<OrderItem> orderItems = List.of(
-                buildOrderItem(null, "Item1", 1000, 1, order, buildItem(1L)),
-                buildOrderItem(null, "Item2", 2000, 2, order, buildItem(2L))
-        );
-
-        when(orderItemRepository.saveAll(orderItems)).thenReturn(orderItems);
-
-        // when
-        List<OrderItem> result = sut.createOrderItems(orderItems);
-
-        // then
-        assertThat(result).hasSize(2)
-                .extracting("name", "price", "quantity")
-                .containsExactly(
-                        tuple("Item1", 1000, 1),
-                        tuple("Item2", 2000, 2)
-                );
-        verify(orderItemRepository, times(1)).saveAll(orderItems);
+        verify(orderRepository, times(1)).save(any());
+        verify(orderItemRepository, times(1)).saveAll(anyList());
     }
 
     @DisplayName("사용자의 주문 목록을 조회할 수 있다.")

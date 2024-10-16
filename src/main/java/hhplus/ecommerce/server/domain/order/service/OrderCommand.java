@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.domain.order.service;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
@@ -29,7 +30,10 @@ public class OrderCommand {
 
         public Map<Long, Integer> toItemMap() {
             return items.stream()
-                    .collect(Collectors.toMap(CreateOrderItem::itemId, CreateOrderItem::amount));
+                    .collect(Collectors.toMap(
+                            CreateOrderItem::itemId,
+                            CreateOrderItem::amount
+                    ));
         }
 
         public Order toOrder(User user) {
@@ -57,7 +61,7 @@ public class OrderCommand {
                     .filter(i -> Objects.equals(i.itemId(), item.getId()))
                     .map(CreateOrderItem::amount)
                     .findAny()
-                    .orElseThrow();
+                    .orElseThrow(NoSuchItemStockException::new);
         }
     }
 

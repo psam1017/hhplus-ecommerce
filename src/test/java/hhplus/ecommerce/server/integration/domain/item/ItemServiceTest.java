@@ -4,6 +4,7 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemException;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
+import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
@@ -122,41 +123,64 @@ public class ItemServiceTest extends ServiceTestEnvironment {
                 .hasMessage(new NoSuchItemException().getMessage());
     }
 
-    @DisplayName("락을 걸고 상품 재고를 조회할 수 있다.")
+    @DisplayName("상품을 원하는 수량만큼 차감할 수 있다.")
     @Test
-    void getItemStockWithLock() {
+    void deductStocks() {
         // given
+        int stockAmount1 = 10;
         Item item1 = createItem("Test Item1", 1000);
-        ItemStock itemStock1 = createItemStock(10, item1);
+        ItemStock itemStock1 = createItemStock(stockAmount1, item1);
 
+        int stockAmount2 = 20;
         Item item2 = createItem("Test Item2", 2000);
-        ItemStock itemStock2 = createItemStock(20, item2);
+        ItemStock itemStock2 = createItemStock(stockAmount2, item2);
 
-        Set<Long> itemIds = Set.of(item1.getId(), item2.getId());
+        Map<Long, Integer> itemIdStockAmountMap = Map.of(
+                item1.getId(), stockAmount1,
+                item2.getId(), stockAmount2
+        );
 
         // when
-        List<ItemStock> result = sut.getItemStocksWithLock(itemIds);
+        sut.deductStocks(itemIdStockAmountMap);
 
         // then
-        assertThat(result).hasSize(2)
-                .extracting(i -> tuple(i.getId(), i.getItem().getId(), i.getAmount()))
+        List<ItemStock> itemStocks = itemStockJpaRepository.findAllByItemIdIn(itemIdStockAmountMap.keySet());
+        assertThat(itemStocks).hasSize(2)
+                .extracting(is -> tuple(is.getId(), is.getItem().getId(), is.getAmount()))
                 .containsExactlyInAnyOrder(
-                        tuple(itemStock1.getId(), item1.getId(), itemStock1.getAmount()),
-                        tuple(itemStock2.getId(), item2.getId(), itemStock2.getAmount())
+                        tuple(itemStock1.getId(), item1.getId(), 0),
+                        tuple(itemStock2.getId(), item2.getId(), 0)
                 );
     }
 
-    @DisplayName("존재하지 않는 아이디로 락을 걸면서 상품 재고를 조회할 경우 예외가 발생한다.")
+    @DisplayName("존재하지 않는 아이디로 상품 재고를 차감할 경우 예외가 발생한다.")
     @Test
-    void throwNoSuchItemExceptionWhenGetItemStockWithLock() {
+    void throwNoSuchItemStockExceptionWhenDeductStocks() {
         // given
-        Set<Long> itemIds = Set.of(1L, 2L);
+        Map<Long, Integer> itemIdStockAmountMap = Map.of(1L, 10, 2L, 20);
 
         // when
         // then
-        assertThatThrownBy(() -> sut.getItemStocksWithLock(itemIds))
+        assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
+    }
+
+    @DisplayName("재고가 부족하면 상품 재고를 차감할 수 없다.")
+    @Test
+    void throwNoSuchItemStockExceptionWhenDeductStocksNotEnoughStock() {
+        // given
+        int stockAmount = 10;
+        Item item = createItem("Test Item", 1000);
+        createItemStock(stockAmount, item);
+
+        Map<Long, Integer> itemIdStockAmountMap = Map.of(item.getId(), stockAmount + 1);
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
+                .isInstanceOf(OutOfItemStockException.class)
+                .hasMessage(new OutOfItemStockException(stockAmount).getMessage());
     }
 
     @DisplayName("상품을 조회할 수 있다.")

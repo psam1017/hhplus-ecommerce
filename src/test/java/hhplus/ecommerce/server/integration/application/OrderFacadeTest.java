@@ -80,6 +80,7 @@ public class OrderFacadeTest extends ServiceTestEnvironment {
         assertThat(orderId).isNotNull();
         Order order = orderJpaRepository.findById(orderId).orElseThrow();
         assertThat(order.getUser().getId()).isEqualTo(user.getId());
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.ORDERED);
         assertThat(orderItemJpaRepository.findAllByOrderId(orderId)).hasSize(2)
                 .extracting(oi -> tuple(oi.getItem().getId(), oi.getName(), oi.getPrice(), oi.getQuantity()))
                 .containsExactlyInAnyOrder(

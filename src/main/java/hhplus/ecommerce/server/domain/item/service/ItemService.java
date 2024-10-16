@@ -41,14 +41,6 @@ public class ItemService {
         return items;
     }
 
-    public List<ItemStock> getItemStocksWithLock(Set<Long> itemIds) {
-        List<ItemStock> itemStocks = itemStockRepository.findAllByItemIdWithLock(itemIds);
-        if (itemStocks.size() != itemIds.size()) {
-            throw new NoSuchItemStockException();
-        }
-        return itemStocks;
-    }
-
     public Item getItem(Long itemId) {
         return itemRepository.findById(itemId).orElseThrow(NoSuchItemException::new);
     }
@@ -67,5 +59,15 @@ public class ItemService {
 
     public ItemStock getItemStockByItemId(Long itemId) {
         return itemStockRepository.findByItemId(itemId).orElseThrow(NoSuchItemStockException::new);
+    }
+
+    public void deductStocks(Map<Long, Integer> itemIdStockAmountMap) {
+        Set<Long> itemIds = itemIdStockAmountMap.keySet();
+        List<ItemStock> itemStocks = itemStockRepository.findAllByItemIdWithLock(itemIds);
+
+        if (itemStocks.size() != itemIds.size()) {
+            throw new NoSuchItemStockException();
+        }
+        itemStocks.forEach(stock -> stock.deductStock(itemIdStockAmountMap.get(stock.getItem().getId())));
     }
 }
