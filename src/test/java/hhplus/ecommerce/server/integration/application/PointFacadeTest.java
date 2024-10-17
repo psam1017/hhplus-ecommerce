@@ -2,17 +2,18 @@ package hhplus.ecommerce.server.integration.application;
 
 import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.Point;
+import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.interfaces.controller.point.PointDto;
+import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PointFacadeTest extends FacadeTestEnvironment {
+public class PointFacadeTest extends SpringBootTestEnvironment {
 
     @Autowired
     PointFacade pointFacade;
@@ -45,8 +46,8 @@ public class PointFacadeTest extends FacadeTestEnvironment {
         int chargeAmount = 50;
 
         User user = createUser("testUser");
-        Point point = createPoint(leftPoint, user);
-        PointDto.PointCreate post = new PointDto.PointCreate(chargeAmount);
+        createPoint(leftPoint, user);
+        PointCommand.ChargePoint post = new PointCommand.ChargePoint(chargeAmount);
 
         // when
         Integer result = pointFacade.chargePoint(user.getId(), post);

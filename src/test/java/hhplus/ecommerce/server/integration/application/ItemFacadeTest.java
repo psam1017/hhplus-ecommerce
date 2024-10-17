@@ -11,6 +11,7 @@ import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
+import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class ItemFacadeTest extends FacadeTestEnvironment {
+public class ItemFacadeTest extends SpringBootTestEnvironment {
 
     @Autowired
     ItemFacade itemFacade;

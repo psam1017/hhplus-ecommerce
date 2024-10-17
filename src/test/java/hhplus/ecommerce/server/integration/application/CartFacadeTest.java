@@ -11,6 +11,7 @@ import hhplus.ecommerce.server.infrastructure.cart.CartJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class CartFacadeTest extends FacadeTestEnvironment {
+public class CartFacadeTest extends SpringBootTestEnvironment {
 
     @Autowired
     CartFacade cartFacade;

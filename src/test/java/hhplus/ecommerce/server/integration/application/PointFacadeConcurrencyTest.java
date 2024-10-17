@@ -2,11 +2,10 @@ package hhplus.ecommerce.server.integration.application;
 
 import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.Point;
+import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.interfaces.controller.point.PointDto;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,7 +57,7 @@ public class PointFacadeConcurrencyTest {
             tasks.add(() -> {
                 try {
                     startLatch.await();
-                    PointDto.PointCreate post = new PointDto.PointCreate(chargeAmount);
+                    PointCommand.ChargePoint post = new PointCommand.ChargePoint(chargeAmount);
                     pointFacade.chargePoint(user.getId(), post);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);

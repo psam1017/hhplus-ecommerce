@@ -17,7 +17,7 @@ import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
 import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.domain.ServiceTestEnvironment;
+import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,7 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class OrderFacadeTest extends ServiceTestEnvironment {
+public class OrderFacadeTest extends SpringBootTestEnvironment {
 
     @Autowired
     OrderFacade orderFacade;

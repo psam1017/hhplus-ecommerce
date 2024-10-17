@@ -42,7 +42,7 @@ public class WebControllerAdvice {
         if (ObjectUtils.isEmpty(message)) {
             message = "유효성 검사에 실패했습니다.";
         }
-        log.error("[reason] {}", message);
+        log.error("[reason] {}", message, ex);
 
         return new ResponseEntity<>(Map.of("error", message), BAD_REQUEST);
     }
@@ -60,7 +60,7 @@ public class WebControllerAdvice {
         if (ObjectUtils.isEmpty(message)) {
             message = "유효성 검사에 실패했습니다.";
         }
-        log.error("[reason] {}", message);
+        log.error("[reason] {}", message, ex);
 
         return new ResponseEntity<>(Map.of("error", message), BAD_REQUEST);
     }

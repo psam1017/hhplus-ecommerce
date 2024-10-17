@@ -6,7 +6,6 @@ import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.user.User;
-import lombok.experimental.UtilityClass;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@UtilityClass
 public class OrderCommand {
 
     public record CreateOrder(
