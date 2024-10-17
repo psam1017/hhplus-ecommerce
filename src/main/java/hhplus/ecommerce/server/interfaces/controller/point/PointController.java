@@ -1,12 +1,12 @@
 package hhplus.ecommerce.server.interfaces.controller.point;
 
 import hhplus.ecommerce.server.application.PointFacade;
+import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,7 +55,7 @@ public class PointController {
             parameters = {
                     @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH)
             },
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "충전할 포인트 정보",
                     required = true,
                     content = @Content(
@@ -78,7 +78,7 @@ public class PointController {
             @RequestBody @Valid PointDto.PointCreate post
     ) {
         return PointDto.PointResponse.builder()
-                .point(pointFacade.chargePoint(userId, post))
+                .point(pointFacade.chargePoint(userId, new PointCommand.ChargePoint(post.chargeAmount())))
                 .build();
     }
 }

@@ -2,12 +2,12 @@ package hhplus.ecommerce.server.interfaces.controller.point;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Builder;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
 public class PointDto {
     public record PointCreate(
+            @Positive
             @NotNull
             @Schema(name = "chargeAmount", description = "충전할 포인트 금액", example = "10000")
             Integer chargeAmount

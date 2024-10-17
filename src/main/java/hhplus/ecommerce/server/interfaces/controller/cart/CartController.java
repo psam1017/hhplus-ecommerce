@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,7 +31,7 @@ public class CartController {
                     @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH),
                     @Parameter(name = "itemId", description = "항목의 고유 식별자", required = true, in = ParameterIn.PATH)
             },
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "업데이트할 장바구니 항목 정보",
                     required = true,
                     content = @Content(

@@ -3,9 +3,7 @@ package hhplus.ecommerce.server.domain.cart.service;
 import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.user.User;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
 public class CartCommand {
 
     public record PutItem(
