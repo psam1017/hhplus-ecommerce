@@ -38,7 +38,7 @@ public class CartDto {
     }
 
     public record CartItemResponseList(
-            @Schema(name = "items", description = "장바구니 항목 목록", example = "[{\"id\":101, \"name\":\"사과\", \"price\":1000, \"amount\":3}]")
+            @Schema(name = "items", description = "장바구니 항목 목록", example = "[{\"id\":101, \"itemId\":201, \"name\":\"사과\", \"price\":1000, \"amount\":3}]")
             List<CartItemResponse> items
     ) {
         public static CartItemResponseList from(List<CartInfo.CartDetail> cartDetails) {
