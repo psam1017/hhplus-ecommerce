@@ -3,11 +3,9 @@ package hhplus.ecommerce.server.interfaces.controller.item;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.experimental.UtilityClass;
 
 import java.util.List;
 
-@UtilityClass
 public class ItemDto {
 
     @Builder

@@ -2,17 +2,15 @@ package hhplus.ecommerce.server.interfaces.controller.order;
 
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
-import hhplus.ecommerce.server.interfaces.common.jsonformat.KoreanDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.experimental.UtilityClass;
+import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@UtilityClass
 public class OrderDto {
 
     public record OrderCreate(
@@ -26,7 +24,7 @@ public class OrderDto {
             @NotNull
             @Schema(name = "itemId", description = "주문할 상품의 고유 식별자", example = "101")
             Long itemId,
-
+            @Positive
             @NotNull
             @Schema(name = "amount", description = "주문할 상품의 수량", example = "2")
             Integer amount
@@ -43,7 +41,6 @@ public class OrderDto {
             @Schema(name = "id", description = "주문 ID", example = "1001")
             Long id,
             @Schema(name = "orderDateTime", description = "주문 일시", example = "2021-08-01T12:34:56")
-            @KoreanDateTime
             LocalDateTime orderDateTime,
             @Schema(name = "orderStatus", description = "주문 상태", example = "ORDERED")
             OrderStatus orderStatus,

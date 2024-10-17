@@ -1,20 +1,21 @@
 package hhplus.ecommerce.server.interfaces.controller.cart;
 
 import hhplus.ecommerce.server.domain.cart.service.CartInfo;
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.experimental.UtilityClass;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 
 import java.util.List;
 
-@UtilityClass
 public class CartDto {
 
     @Builder
     public record CartItemResponse(
             @Schema(name = "id", description = "장바구니 항목의 고유 식별자", example = "101")
             Long id,
+            @Schema(name = "itemId", description = "상품의 고유 식별자", example = "201")
+            Long itemId,
 
             @Schema(name = "name", description = "상품의 이름", example = "사과")
             String name,
@@ -28,6 +29,7 @@ public class CartDto {
         public static CartItemResponse from(CartInfo.CartDetail cartDetail) {
             return new CartItemResponse(
                     cartDetail.id(),
+                    cartDetail.itemId(),
                     cartDetail.name(),
                     cartDetail.price(),
                     cartDetail.amount()
@@ -49,6 +51,7 @@ public class CartDto {
     }
 
     public record CartItemPut(
+            @Positive
             @NotNull
             @Schema(name = "amount", description = "상품의 수량", example = "1")
             Integer amount
@@ -56,6 +59,7 @@ public class CartDto {
     }
 
     public record CartItemDeleteResponse(
+            @NotNull
             @Schema(name = "id", description = "장바구니 항목의 고유 식별자", example = "101")
             Long id
     ) {
