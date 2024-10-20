@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.domain.point.exception;
 
-import hhplus.ecommerce.server.interfaces.common.api.ApiException;
+import hhplus.ecommerce.server.interfaces.exception.ApiException;
 
 public class NoSuchPointException extends ApiException {
     public NoSuchPointException() {

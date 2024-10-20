@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.unit.user;
+package hhplus.ecommerce.server.unit.domain.user;
 
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.exception.NoSuchUserException;

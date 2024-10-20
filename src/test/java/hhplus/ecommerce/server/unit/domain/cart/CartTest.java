@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.unit.cart;
+package hhplus.ecommerce.server.unit.domain.cart;
 
 import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.item.Item;
