@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.cart;
+package hhplus.ecommerce.server.integration.interfaces.controller.cart;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.CartFacade;
@@ -45,7 +45,7 @@ public class CartControllerTest {
     }
 
     @Test
-    @DisplayName("장바구니 항목 추가 또는 업데이트 API 테스트")
+    @DisplayName("장바구니에 상품을 담으면 이를 저장할 수 있다.")
     void putItemIntoCartTest() throws Exception {
         // given
         CartInfo.CartDetail cartDetail = new CartInfo.CartDetail(1L, 101L, "사과", 1000, 2);
@@ -72,7 +72,7 @@ public class CartControllerTest {
     }
 
     @Test
-    @DisplayName("장바구니 항목 조회 API 테스트")
+    @DisplayName("사용자 ID 가 있으면 장바구니 목록을 조회할 수 있다.")
     void getCartItemsTest() throws Exception {
         // given
         Long userId = 1L;
@@ -107,7 +107,7 @@ public class CartControllerTest {
     }
 
     @Test
-    @DisplayName("장바구니 항목 삭제 API 테스트")
+    @DisplayName("장바구니 ID 를 보내면 장바구니 목록에서 상품을 삭제할 수 있다.")
     void deleteItemFromCartTest() throws Exception {
         // given
         Long userId = 1L;

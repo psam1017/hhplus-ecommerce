@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.item;
+package hhplus.ecommerce.server.integration.interfaces.controller.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.ItemFacade;
@@ -32,16 +32,8 @@ public class ItemControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    protected String createJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Test
-    @DisplayName("상위 상품 조회 API 테스트")
+    @DisplayName("로그인을 하지 않아도 API 를 호출하면 인기 상품 목록을 조회할 수 있다.")
     void findTopItemsTest() throws Exception {
         // given
         List<ItemInfo.ItemDetail> topItems = List.of(
@@ -71,7 +63,7 @@ public class ItemControllerTest {
     }
 
     @Test
-    @DisplayName("전체 상품 조회 API 테스트")
+    @DisplayName("로그인을 하지 않아도 API 를 호출하면 전체 상품 목록을 조회할 수 있다.")
     void findItemsTest() throws Exception {
         // given
         List<ItemInfo.ItemDetail> allItems = List.of(

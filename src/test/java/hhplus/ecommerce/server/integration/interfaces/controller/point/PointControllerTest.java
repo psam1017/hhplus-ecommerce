@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.point;
+package hhplus.ecommerce.server.integration.interfaces.controller.point;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.PointFacade;
@@ -42,7 +42,7 @@ public class PointControllerTest {
     }
 
     @Test
-    @DisplayName("포인트 조회 API 테스트")
+    @DisplayName("사용자 ID 를 전달하면 해당 사용자의 포인트를 조회할 수 있다.")
     void getPointTest() throws Exception {
         // given
         Long userId = 1L;
@@ -63,7 +63,7 @@ public class PointControllerTest {
     }
 
     @Test
-    @DisplayName("포인트 충전 API 테스트")
+    @DisplayName("사용자 ID 와 충전할 포인트 금액을 전달하면 해당 사용자의 포인트를 충전할 수 있다.")
     void chargePointTest() throws Exception {
         // given
         Long userId = 1L;

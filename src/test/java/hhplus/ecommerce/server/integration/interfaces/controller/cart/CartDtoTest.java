@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.cart;
+package hhplus.ecommerce.server.integration.interfaces.controller.cart;
 
 import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import hhplus.ecommerce.server.interfaces.controller.cart.CartDto;
@@ -21,7 +21,7 @@ public class CartDtoTest extends SpringBootTestEnvironment {
     @Autowired
     Validator validator;
 
-    @DisplayName("장바구니에 상품의 수량을 반드시 입력해야 한다.")
+    @DisplayName("장바구니에 상품을 저장할 때 상품의 수량을 입력하지 않으면 유효성 검증에 실패한다.")
     @Test
     void CartItemPutValidation() {
         // given
@@ -36,11 +36,11 @@ public class CartDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("amount", NotNull.class));
     }
 
-    @DisplayName("장바구니에 상품의 수량은 양수를 입력해야 한다.")
+    @DisplayName("장바구니에 상품을 저장할 때 상품의 수량이 양수가 아니면 유효성 검증에 실패한다.")
     @Test
     void CartItemPutPositive() {
         // given
-        CartDto.CartItemPut target = new CartDto.CartItemPut(-1);
+        CartDto.CartItemPut target = new CartDto.CartItemPut(0);
 
         // when
         Set<ConstraintViolation<CartDto.CartItemPut>> validations = validator.validate(target);

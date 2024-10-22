@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.order;
+package hhplus.ecommerce.server.integration.interfaces.controller.order;
 
 import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
 import hhplus.ecommerce.server.interfaces.controller.order.OrderDto;
@@ -23,7 +23,7 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
     @Autowired
     Validator validator;
 
-    @DisplayName("주문할 때 주문할 정보 배열을 보내야 한다.")
+    @DisplayName("주문할 때 주문할 정보 배열을 보내지 않으면 유효성 검증에 실패한다.")
     @Test
     void OrderCreateNotNull() {
         // given
@@ -38,7 +38,7 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("items", NotEmpty.class));
     }
 
-    @DisplayName("주문할 때 주문할 정보 배열은 비어있으면 안된다.")
+    @DisplayName("주문할 때 주문할 정보 배열이 비어있으면 유효성 검증에 실패한다.")
     @Test
     void OrderCreateNotEmpty() {
         // given
@@ -53,7 +53,7 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("items", NotEmpty.class));
     }
 
-    @DisplayName("주문할 때 주문할 상품의 식별자와 수량을 반드시 보내야 한다.")
+    @DisplayName("주문할 때 주문할 정보 배열의 값에 상품 아이디와 구매수량을 입력하지 않으면 유효성 검증에 실패한다.")
     @Test
     void OrderCreateItemNotNull() {
         // given
@@ -68,7 +68,7 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("itemId", NotNull.class), tuple("amount", NotNull.class));
     }
 
-    @DisplayName("주문할 때 상품의 구매수량은 양수를 입력해야 한다.")
+    @DisplayName("주문할 때 상품의 구매수량으로 양수를 입력하지 않으면 유효성 검증에 실패한다.")
     @Test
     void OrderCreateItemPositive() {
         // given
@@ -83,7 +83,7 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("amount", Positive.class));
     }
 
-    @DisplayName("주문 생성 시 구매 정보 배열을 검증할 수 있다.")
+    @DisplayName("주문 생성 정보를 검증할 때는 주문 정보 배열의 값도 검증할 수 있다.")
     @Test
     void OrderCreateValid() {
         // given

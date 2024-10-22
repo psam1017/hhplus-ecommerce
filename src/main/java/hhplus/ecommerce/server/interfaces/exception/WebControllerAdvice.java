@@ -22,8 +22,8 @@ public class WebControllerAdvice {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Object> handleApiException(ApiException ex, HttpServletRequest request) {
 
-        log.error("[ApiException handle] URI = {}", request.getRequestURI());
-        log.error("[reason] {}", ex.getMessage(), ex);
+        log.info("[ApiException handle] URI = {}", request.getRequestURI());
+        log.info("[reason] {}", ex.getMessage(), ex);
 
         ApiErrorResponse responseBody = new ApiErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseEntity<>(responseBody, BAD_REQUEST);
@@ -33,6 +33,7 @@ public class WebControllerAdvice {
     @ExceptionHandler(BindException.class)
     public ResponseEntity<Object> handleBindException(BindException ex, HttpServletRequest request) {
 
+        // 발견되면 프론트엔드에서 유효성 검사를 해달라고 요청하기
         log.error("[BindException handle] URI = {}", request.getRequestURI());
 
         String message = null;
@@ -53,6 +54,7 @@ public class WebControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, HttpServletRequest request) {
 
+        // 발견되면 프론트엔드에서 유효성 검사를 해달라고 요청하기
         log.error("[ConstraintViolationException handle] URI = {}", request.getRequestURI());
 
         String message = null;

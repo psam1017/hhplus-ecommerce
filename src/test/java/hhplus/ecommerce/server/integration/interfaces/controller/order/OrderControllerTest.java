@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.order;
+package hhplus.ecommerce.server.integration.interfaces.controller.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.OrderFacade;
@@ -46,7 +46,7 @@ public class OrderControllerTest {
         }
     }
     @Test
-    @DisplayName("주문 생성 API 테스트")
+    @DisplayName("사용자가 상품 ID 와 수량을 전달하면 해당 상품을 결제할 수 있다.")
     void createOrderTest() throws Exception {
         // given
         Long userId = 1L;
@@ -72,7 +72,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @DisplayName("주문 목록 조회 API 테스트")
+    @DisplayName("사용자 ID 가 있으면 주문 목록을 조회할 수 있다.")
     void getOrdersTest() throws Exception {
         // given
         Long userId = 1L;
@@ -103,7 +103,7 @@ public class OrderControllerTest {
     }
 
     @Test
-    @DisplayName("주문 조회 API 테스트")
+    @DisplayName("사용자 ID 와 주문 ID 가 있으면 주문 상세를 조회할 수 있다.")
     void getOrderTest() throws Exception {
         // given
         Long userId = 1L;

@@ -1,7 +1,6 @@
-package hhplus.ecommerce.server.integration.interfaces.point;
+package hhplus.ecommerce.server.integration.interfaces.controller.point;
 
 import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
-import hhplus.ecommerce.server.interfaces.controller.cart.CartDto;
 import hhplus.ecommerce.server.interfaces.controller.point.PointDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -22,7 +21,7 @@ public class PointDtoTest extends SpringBootTestEnvironment {
     @Autowired
     Validator validator;
 
-    @DisplayName("장바구니에 상품의 수량을 반드시 입력해야 한다.")
+    @DisplayName("포인트를 충전할 때 충전할 포인트 수량을 입력하지 않으면 유효성 검증에 실패한다.")
     @Test
     void PointCreateNotNull() {
         // given
@@ -37,7 +36,7 @@ public class PointDtoTest extends SpringBootTestEnvironment {
                 .contains(tuple("chargeAmount", NotNull.class));
     }
 
-    @DisplayName("포인트 수량은 양수를 입력해야 한다.")
+    @DisplayName("포인트를 충전할 때 충전할 포인트 수량이 양수가 아니면 유효성 검증에 실패한다.")
     @Test
     void PointCreatePositive() {
         // given
@@ -50,20 +49,5 @@ public class PointDtoTest extends SpringBootTestEnvironment {
         assertThat(validations).hasSize(1)
                 .extracting(cv -> tuple(cv.getPropertyPath().toString(), cv.getConstraintDescriptor().getAnnotation().annotationType()))
                 .contains(tuple("chargeAmount", Positive.class));
-    }
-
-    @DisplayName("삭제할 장바구니 아이디는 필수로 입력해야 한다.")
-    @Test
-    void CartItemDeleteResponseNotNull() {
-        // given
-        CartDto.CartItemDeleteResponse target = new CartDto.CartItemDeleteResponse(null);
-
-        // when
-        Set<ConstraintViolation<CartDto.CartItemDeleteResponse>> validations = validator.validate(target);
-
-        // then
-        assertThat(validations).hasSize(1)
-                .extracting(cv -> tuple(cv.getPropertyPath().toString(), cv.getConstraintDescriptor().getAnnotation().annotationType()))
-                .contains(tuple("id", NotNull.class));
     }
 }
