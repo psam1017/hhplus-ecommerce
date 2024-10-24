@@ -37,6 +37,9 @@ public class PointService {
         int totalPrice = 0;
         for (Item item : items) {
             totalPrice += item.getPrice() * itemIdStockAmountMap.get(item.getId());
+            System.out.println("item.getPrice() = " + item.getPrice());
+            System.out.println("itemIdStockAmountMap.get(item.getId()) = " + itemIdStockAmountMap.get(item.getId()));
+            System.out.println("totalPrice = " + totalPrice);
         }
         return totalPrice;
     }

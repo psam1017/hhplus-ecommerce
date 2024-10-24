@@ -36,9 +36,15 @@ public class OrderService {
         return orderItemRepository.findOrderAmounts(orderIds);
     }
 
-    public Order createOrderAndItems(OrderCommand.CreateOrder command, User user, List<Item> items) {
+    public Order createOrderAndItems(OrderCommand.CreateOrderByItem command, User user, List<Item> items) {
         Order order = orderRepository.save(command.toOrder(user));
         orderItemRepository.saveAll(command.toOrderItems(items, order));
+        return order;
+    }
+
+    public Order createOrderAndItems(OrderCommand.CreateOrderByCart command, User user, List<Item> items, Map<Long, Integer> itemStockAmountMap) {
+        Order order = orderRepository.save(command.toOrder(user));
+        orderItemRepository.saveAll(command.toOrderItems(items, itemStockAmountMap, order));
         return order;
     }
 }

@@ -10,10 +10,11 @@ import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class OrderDto {
 
-    public record OrderCreate(
+    public record OrderCreateFromItem(
             @NotEmpty @Valid
             @Schema(name = "items", description = "주문 항목 목록", example = "[{\"itemId\":101, \"amount\":2}]")
             List<OrderCreateItem> items
@@ -28,6 +29,13 @@ public class OrderDto {
             @NotNull
             @Schema(name = "amount", description = "주문할 상품의 수량", example = "2")
             Integer amount
+    ) {
+    }
+
+    public record OrderCreateFromCart(
+            @NotEmpty
+            @Schema(name = "cartIds", description = "장바구니 ID 목록", example = "[101, 102]")
+            Set<Long> cartIds
     ) {
     }
 

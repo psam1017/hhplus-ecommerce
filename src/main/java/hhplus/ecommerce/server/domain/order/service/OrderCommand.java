@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class OrderCommand {
 
-    public record CreateOrder(
+    public record CreateOrderByItem(
             Long userId,
             List<CreateOrderItem> items
     ) {
@@ -60,6 +60,32 @@ public class OrderCommand {
                     .map(CreateOrderItem::amount)
                     .findAny()
                     .orElseThrow(NoSuchItemStockException::new);
+        }
+    }
+
+    public record CreateOrderByCart(
+            Long userId,
+            Set<Long> cartIds
+    ) {
+
+        public Order toOrder(User user) {
+            return Order.builder()
+                    .user(user)
+                    .status(OrderStatus.ORDERED)
+                    .orderDateTime(LocalDateTime.now())
+                    .build();
+        }
+
+        public List<OrderItem> toOrderItems(List<Item> items, Map<Long, Integer> itemIdStockAmountMap, Order order) {
+            return items.stream()
+                    .map(item -> OrderItem.builder()
+                            .order(order)
+                            .item(item)
+                            .name(item.getName())
+                            .price(item.getPrice())
+                            .quantity(itemIdStockAmountMap.get(item.getId()))
+                            .build())
+                    .collect(Collectors.toList());
         }
     }
 

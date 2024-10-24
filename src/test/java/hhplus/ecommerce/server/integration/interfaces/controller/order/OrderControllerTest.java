@@ -5,7 +5,6 @@ import hhplus.ecommerce.server.application.OrderFacade;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
-import hhplus.ecommerce.server.interfaces.controller.item.ItemController;
 import hhplus.ecommerce.server.interfaces.controller.order.OrderController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -45,18 +45,19 @@ public class OrderControllerTest {
             throw new RuntimeException(e);
         }
     }
-    @Test
+
     @DisplayName("사용자가 상품 ID 와 수량을 전달하면 해당 상품을 결제할 수 있다.")
+    @Test
     void createOrderTest() throws Exception {
         // given
         Long userId = 1L;
-        OrderCommand.CreateOrder orderCreate = new OrderCommand.CreateOrder(
+        OrderCommand.CreateOrderByItem orderCreate = new OrderCommand.CreateOrderByItem(
                 userId,
                 List.of(new OrderCommand.CreateOrderItem(101L, 2))
         );
         Long orderId = 1001L;
 
-        when(orderFacade.createOrder(any(OrderCommand.CreateOrder.class))).thenReturn(orderId);
+        when(orderFacade.createOrder(any(OrderCommand.CreateOrderByItem.class))).thenReturn(orderId);
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -71,8 +72,32 @@ public class OrderControllerTest {
                 .andExpect(jsonPath("$.id").value(orderId));
     }
 
+    @DisplayName("사용자가 장바구니 ID 를 전달하면 해당 상품을 결제할 수 있다.")
     @Test
+    void createOrderByCartTest() throws Exception {
+        // given
+        Long userId = 1L;
+        Long cartId = 1001L;
+        OrderCommand.CreateOrderByCart orderCreate = new OrderCommand.CreateOrderByCart(userId, Set.of(cartId));
+        Long orderId = 1001L;
+
+        when(orderFacade.createOrder(any(OrderCommand.CreateOrderByCart.class))).thenReturn(orderId);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+                post("/api/users/{userId}/orders/carts", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson(orderCreate))
+        );
+
+        // then
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(orderId));
+    }
+
     @DisplayName("사용자 ID 가 있으면 주문 목록을 조회할 수 있다.")
+    @Test
     void getOrdersTest() throws Exception {
         // given
         Long userId = 1L;
@@ -102,8 +127,8 @@ public class OrderControllerTest {
                 .andExpect(jsonPath("$.orders[1].orderAmount").value(8000));
     }
 
-    @Test
     @DisplayName("사용자 ID 와 주문 ID 가 있으면 주문 상세를 조회할 수 있다.")
+    @Test
     void getOrderTest() throws Exception {
         // given
         Long userId = 1L;

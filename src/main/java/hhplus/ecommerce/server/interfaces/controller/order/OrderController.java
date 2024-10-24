@@ -34,7 +34,7 @@ public class OrderController {
                     description = "주문 생성 정보",
                     required = true,
                     content = @Content(
-                            schema = @Schema(implementation = OrderDto.OrderCreate.class)
+                            schema = @Schema(implementation = OrderDto.OrderCreateFromItem.class)
                     )
             ),
             responses = {
@@ -50,14 +50,50 @@ public class OrderController {
     @PostMapping("")
     public OrderDto.OrderIdResponse createOrder(
             @PathVariable Long userId,
-            @RequestBody @Valid OrderDto.OrderCreate post
+            @RequestBody @Valid OrderDto.OrderCreateFromItem post
     ) {
         return new OrderDto.OrderIdResponse(orderFacade.createOrder(
-                new OrderCommand.CreateOrder(
+                new OrderCommand.CreateOrderByItem(
                         userId,
                         post.items().stream()
                                 .map(item -> new OrderCommand.CreateOrderItem(item.itemId(), item.amount()))
                                 .toList()
+                )
+        ));
+    }
+
+    @Operation(
+            summary = "장바구니에서 주문 생성",
+            description = "특정 사용자의 장바구니에서 주문을 생성합니다.",
+            parameters = {
+                    @Parameter(name = "userId", description = "사용자의 고유 식별자", required = true, in = ParameterIn.PATH)
+            },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "주문 생성 정보",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = OrderDto.OrderCreateFromCart.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "생성된 주문의 ID",
+                            content = @Content(
+                                    schema = @Schema(implementation = OrderDto.OrderIdResponse.class)
+                            )
+                    )
+            }
+    )
+    @PostMapping("/carts")
+    public OrderDto.OrderIdResponse createOrderFromCart(
+            @PathVariable Long userId,
+            @RequestBody @Valid OrderDto.OrderCreateFromCart post
+    ) {
+        return new OrderDto.OrderIdResponse(orderFacade.createOrder(
+                new OrderCommand.CreateOrderByCart(
+                        userId,
+                        post.cartIds()
                 )
         ));
     }

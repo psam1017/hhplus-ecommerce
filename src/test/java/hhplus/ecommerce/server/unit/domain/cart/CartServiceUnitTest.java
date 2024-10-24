@@ -85,7 +85,7 @@ public class CartServiceUnitTest {
         verify(cartRepository, times(1)).findByUserIdAndItemId(userId, itemId);
     }
 
-    @DisplayName("사용자의 장바구니 아이템을 조회할 수 있다.")
+    @DisplayName("사용자의 모든 장바구니 아이템을 조회할 수 있다.")
     @Test
     void getCartItems() {
         // given
@@ -98,7 +98,7 @@ public class CartServiceUnitTest {
                 cart2
         );
 
-        when(cartRepository.findAllByUserId(userId))
+        when(cartRepository.findAllByUserId(eq(userId)))
                 .thenReturn(cartItems);
 
         // when
@@ -108,6 +108,47 @@ public class CartServiceUnitTest {
         assertThat(result).hasSize(2)
                 .containsExactly(cart1, cart2);
         verify(cartRepository, times(1)).findAllByUserId(userId);
+    }
+
+    @DisplayName("장바구니 아이디로 장바구니 아이템을 조회할 수 있다.")
+    @Test
+    void getCartItemsByIds() {
+        // given
+        Long userId = 1L;
+
+        Cart cart1 = Cart.builder().build();
+        Cart cart2 = Cart.builder().build();
+        List<Cart> cartItems = List.of(
+                cart1,
+                cart2
+        );
+
+        when(cartRepository.findAllByUserIdAndIdIn(eq(userId), anySet()))
+                .thenReturn(cartItems);
+
+        // when
+        List<Cart> result = sut.getCartItems(userId, Set.of(1L, 2L));
+
+        // then
+        assertThat(result).hasSize(2)
+                .containsExactly(cart1, cart2);
+        verify(cartRepository, times(1)).findAllByUserIdAndIdIn(userId, Set.of(1L, 2L));
+    }
+
+    @DisplayName("존재하지 않는 장바구니 아이디를 전송하면 조회 실패로 예외가 발생한다.")
+    @Test
+    void throwNoSuchCartExceptionWhenGetCartItemsByIds() {
+        // given
+        Long userId = 1L;
+
+        when(cartRepository.findAllByUserIdAndIdIn(eq(userId), anySet()))
+                .thenReturn(List.of());
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.getCartItems(userId, Set.of(1L, 2L)))
+                .isInstanceOf(NoSuchCartException.class)
+                .hasMessage(new NoSuchCartException().getMessage());
     }
 
     @DisplayName("장바구니에서 특정 아이템을 삭제할 수 있다.")
@@ -150,20 +191,6 @@ public class CartServiceUnitTest {
                 .isInstanceOf(NoSuchCartException.class)
                 .hasMessage(new NoSuchCartException().getMessage());
         verify(cartRepository, times(1)).findByUserIdAndItemId(userId, itemId);
-    }
-
-    @DisplayName("사용자의 장바구니에서 여러 아이템을 삭제할 수 있다.")
-    @Test
-    void deleteCartItems() {
-        // given
-        Long userId = 1L;
-        Set<Long> itemIds = Set.of(1L, 2L);
-
-        // when
-        sut.deleteCartItems(userId, itemIds);
-
-        // then
-        verify(cartRepository, times(1)).deleteByUserIdAndItemIds(userId, itemIds);
     }
 
     private User buildUser(Long userId) {

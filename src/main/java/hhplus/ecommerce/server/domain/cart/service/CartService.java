@@ -31,13 +31,21 @@ public class CartService {
         return cartRepository.findAllByUserId(userId);
     }
 
+    public List<Cart> getCartItems(Long userId, Set<Long> cartIds) {
+        List<Cart> cartItems = cartRepository.findAllByUserIdAndIdIn(userId, cartIds);
+        if (cartItems.size() != cartIds.size()) {
+            throw new NoSuchCartException();
+        }
+        return cartItems;
+    }
+
     public Long deleteCartItem(Long userId, Long itemId) {
         Cart cart = cartRepository.findByUserIdAndItemId(userId, itemId).orElseThrow(NoSuchCartException::new);
         cartRepository.delete(cart);
         return cart.getId();
     }
 
-    public void deleteCartItems(Long userId, Set<Long> itemIds) {
-        cartRepository.deleteByUserIdAndItemIds(userId, itemIds);
+    public void deleteCartItems(Set<Long> cartIds) {
+        cartRepository.deleteAllById(cartIds);
     }
 }

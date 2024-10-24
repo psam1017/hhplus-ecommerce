@@ -71,7 +71,7 @@ public class CartServiceTest extends SpringBootTestEnvironment {
         assertThat(result.getQuantity()).isEqualTo(updatedCart.getQuantity());
     }
 
-    @DisplayName("사용자의 장바구니 아이템을 조회할 수 있다.")
+    @DisplayName("사용자의 모든 장바구니 아이템을 조회할 수 있다.")
     @Test
     void getCartItems() {
         // given
@@ -89,11 +89,55 @@ public class CartServiceTest extends SpringBootTestEnvironment {
 
         // then
         assertThat(result).hasSize(2)
-                .extracting("user.id", "item.id", "quantity")
+                .extracting(c -> tuple(c.getUser().getId(), c.getItem().getId(), c.getQuantity()))
                 .containsExactly(
                         tuple(user.getId(), item1.getId(), cart1.getQuantity()),
                         tuple(user.getId(), item2.getId(), cart2.getQuantity())
                 );
+    }
+
+    @DisplayName("장바구니 아이디로 장바구니 아이템을 조회할 수 있다.")
+    @Test
+    void getCartItemsByCartIds() {
+        // given
+        User user = createUser("testUser");
+        Item item1 = createItem("testItem1", 1000);
+        Item item2 = createItem("testItem2", 2000);
+
+        Cart cart1 = createCart(1, user, item1);
+        Cart cart2 = createCart(2, user, item2);
+        Cart savedCart1 = cartJpaRepository.save(cart1);
+        Cart savedCart2 = cartJpaRepository.save(cart2);
+
+        // when
+        List<Cart> result = sut.getCartItems(user.getId(), Set.of(savedCart1.getId(), savedCart2.getId()));
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting(c -> tuple(c.getUser().getId(), c.getItem().getId(), c.getQuantity()))
+                .containsExactly(
+                        tuple(user.getId(), item1.getId(), cart1.getQuantity()),
+                        tuple(user.getId(), item2.getId(), cart2.getQuantity())
+                );
+    }
+
+    @DisplayName("존재하지 않는 장바구니 아이디를 전송하면 조회 실패로 예외가 발생한다.")
+    @Test
+    void throwNoSuchCartExceptionWhenGetCartItemsByCartIds() {
+        // given
+        User user = createUser("testUser");
+        Item item = createItem("testItem", 1000);
+
+        Cart cart = createCart(1, user, item);
+        Cart savedCart = cartJpaRepository.save(cart);
+
+        Set<Long> nonExistentCartIds = Set.of(savedCart.getId(), 999L);
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.getCartItems(user.getId(), nonExistentCartIds))
+                .isInstanceOf(NoSuchCartException.class)
+                .hasMessage(new NoSuchCartException().getMessage());
     }
 
     @DisplayName("장바구니에서 특정 아이템을 삭제할 수 있다.")
@@ -125,29 +169,6 @@ public class CartServiceTest extends SpringBootTestEnvironment {
         assertThatThrownBy(() -> sut.deleteCartItem(nonExistentUserId, nonExistentItemId))
                 .isInstanceOf(NoSuchCartException.class)
                 .hasMessage(new NoSuchCartException().getMessage());
-    }
-
-    @DisplayName("사용자의 장바구니에서 여러 아이템을 삭제할 수 있다.")
-    @Test
-    void deleteCartItems() {
-        // given
-        User user = createUser("testUser");
-        Item item1 = createItem("testItem1", 1000);
-        Item item2 = createItem("testItem2", 2000);
-
-        Cart cart1 = createCart(1, user, item1);
-        Cart cart2 = createCart(2, user, item2);
-        cartJpaRepository.save(cart1);
-        cartJpaRepository.save(cart2);
-
-        Set<Long> itemIds = Set.of(item1.getId(), item2.getId());
-
-        // when
-        sut.deleteCartItems(user.getId(), itemIds);
-
-        // then
-        List<Cart> result = sut.getCartItems(user.getId());
-        assertThat(result).isEmpty();
     }
 
     private User createUser(String username) {

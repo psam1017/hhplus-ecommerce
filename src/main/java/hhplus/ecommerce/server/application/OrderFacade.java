@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.application;
 
+import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.cart.service.CartService;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -43,11 +45,11 @@ public class OrderFacade {
      *  - 현실에서도 주문과 결제가 별개의 행위이듯 주문과 결제라는 각각의 행위 자체에 대해 집중하여 고찰할 수 있다.
      * 3. 결론
      *  - 재고관리에 대한 동시성 제어를 더 중요시하는 서비스를 만들고자 예외상황을 줄일 수 있는 '주문 + 결제' API 를 제공한다.
-     * @param command 사용자 주문 생성에 필요한 정보
-     * @return 주문 ID
+     * @param command 사용자 아이디, 상품 아이디와 수량
+     * @return 주문 아이디
      */
     @Transactional
-    public Long createOrder(OrderCommand.CreateOrder command) {
+    public Long createOrder(OrderCommand.CreateOrderByItem command) {
         Set<Long> itemIds = command.toItemIds();
         Map<Long, Integer> itemIdStockAmountMap = command.toItemMap();
 
@@ -56,7 +58,27 @@ public class OrderFacade {
         itemService.deductStocks(itemIdStockAmountMap);
         pointService.usePoint(command.userId(), items, itemIdStockAmountMap);
         Order order = orderService.createOrderAndItems(command, user, items);
-        cartService.deleteCartItems(command.userId(), itemIds);
+        orderDataPlatform.saveOrderData(itemIdStockAmountMap);
+
+        return order.getId();
+    }
+
+    /**
+     * @param command 사용자 아이디, 장바구니 아이디
+     * @return 주문 아이디
+     */
+    @Transactional
+    public Long createOrder(OrderCommand.CreateOrderByCart command) {
+        List<Cart> carts = cartService.getCartItems(command.userId(), command.cartIds());
+        Set<Long> itemIds = carts.stream().map(c -> c.getItem().getId()).collect(Collectors.toSet());
+        Map<Long, Integer> itemIdStockAmountMap = carts.stream().collect(Collectors.toMap(c -> c.getItem().getId(), Cart::getQuantity));
+
+        User user = userService.getUser(command.userId());
+        List<Item> items = itemService.findItems(itemIds);
+        itemService.deductStocks(itemIdStockAmountMap);
+        pointService.usePoint(command.userId(), items, itemIdStockAmountMap);
+        Order order = orderService.createOrderAndItems(command, user, items, itemIdStockAmountMap);
+        cartService.deleteCartItems(command.cartIds());
         orderDataPlatform.saveOrderData(itemIdStockAmountMap);
 
         return order.getId();
