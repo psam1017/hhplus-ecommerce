@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -37,11 +38,11 @@ public class OrderServiceUnitTest {
     @Mock
     OrderItemRepository orderItemRepository;
 
-    @DisplayName("주문을 생성할 수 있다.")
+    @DisplayName("상품 ID 로 주문을 생성할 수 있다.")
     @Test
-    void createOrderAndItems() {
+    void createOrderAndItemsByItem() {
         // given
-        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+        OrderCommand.CreateOrderByItem command = new OrderCommand.CreateOrderByItem(
                 1L,
                 List.of(
                         new OrderCommand.CreateOrderItem(1L, 1),
@@ -67,6 +68,44 @@ public class OrderServiceUnitTest {
 
         // when
         Order result = sut.createOrderAndItems(command, user, items);
+
+        // then
+        assertThat(result).isEqualTo(order);
+        verify(orderRepository, times(1)).save(any());
+        verify(orderItemRepository, times(1)).saveAll(anyList());
+    }
+
+    @DisplayName("장바구니 ID 로 주문을 생성할 수 있다.")
+    @Test
+    void createOrderAndItemsByCart() {
+        // given
+        OrderCommand.CreateOrderByCart command = new OrderCommand.CreateOrderByCart(
+                1L,
+                Set.of(1L, 2L)
+        );
+        User user = buildUser(1L);
+        List<Item> items = List.of(
+                buildItem(1L),
+                buildItem(2L)
+        );
+
+        Order order = buildOrder(1L, user);
+        List<OrderItem> orderItems = List.of(
+                buildOrderItem(1L, "Item1", 1000, 1, order, buildItem(1L)),
+                buildOrderItem(2L, "Item2", 2000, 2, order, buildItem(2L))
+        );
+        Map<Long, Integer> itemStockAmountMap = Map.of(
+                1L, 1,
+                2L, 2
+        );
+
+        when(orderRepository.save(any()))
+                .thenReturn(order);
+        when(orderItemRepository.saveAll(anyList()))
+                .thenReturn(orderItems);
+
+        // when
+        Order result = sut.createOrderAndItems(command, user, items, itemStockAmountMap);
 
         // then
         assertThat(result).isEqualTo(order);

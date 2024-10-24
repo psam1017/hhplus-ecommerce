@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.application;
 
+import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.cart.service.CartCommand;
 import hhplus.ecommerce.server.domain.cart.service.CartInfo;
 import hhplus.ecommerce.server.domain.cart.service.CartService;
@@ -12,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -27,13 +31,16 @@ public class CartFacade {
 
         User user = userService.getUser(command.userId());
         Item item = itemService.getItem(command.itemId());
-        return CartInfo.CartDetail.from(cartService.putItem(command.toCart(user, item)));
+        return CartInfo.CartDetail.from(cartService.putItem(command.toCart(user, item)), itemStock.getAmount());
     }
 
     public List<CartInfo.CartDetail> getCartItems(Long userId) {
-        return cartService.getCartItems(userId).stream()
-                .map(CartInfo.CartDetail::from)
-                .toList();
+        List<Cart> cartItems = cartService.getCartItems(userId);
+        Set<Long> itemIds = cartItems.stream().map(c -> c.getItem().getId()).collect(Collectors.toSet());
+        Map<Long, Integer> itemIdStockAmountMap = itemService.getStocks(itemIds);
+        return cartItems.stream()
+                .map(c -> CartInfo.CartDetail.from(c, itemIdStockAmountMap.get(c.getItem().getId())))
+                .collect(Collectors.toList());
     }
 
     public Long deleteCartItem(Long userId, Long itemId) {

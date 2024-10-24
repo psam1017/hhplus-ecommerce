@@ -11,15 +11,17 @@ public class CartInfo {
             Long itemId,
             String name,
             Integer price,
-            Integer amount
+            Integer amount,
+            Integer leftStock
     ) {
-        public static CartDetail from(Cart cart) {
+        public static CartDetail from(Cart cart, int leftStock) {
             return new CartDetail(
                     cart.getId(),
                     cart.getItem().getId(),
                     cart.getItem().getName(),
                     cart.getItem().getPrice(),
-                    cart.getQuantity()
+                    cart.getQuantity(),
+                    leftStock
             );
         }
     }

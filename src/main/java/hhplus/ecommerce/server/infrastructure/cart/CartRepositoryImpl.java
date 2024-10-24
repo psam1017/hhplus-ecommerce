@@ -41,4 +41,14 @@ public class CartRepositoryImpl implements CartRepository {
     public void deleteByUserIdAndItemIds(Long userId, Set<Long> itemIds) {
         cartJpaRepository.deleteByUserIdAndItemIdIn(userId, itemIds);
     }
+
+    @Override
+    public void deleteAllById(Set<Long> cartIds) {
+        cartJpaRepository.deleteAllById(cartIds);
+    }
+
+    @Override
+    public List<Cart> findAllByUserIdAndIdIn(Long userId, Set<Long> cartIds) {
+        return cartJpaRepository.findAllByUserIdAndIdIn(userId, cartIds);
+    }
 }

@@ -48,7 +48,7 @@ public class CartControllerTest {
     @DisplayName("장바구니에 상품을 담으면 이를 저장할 수 있다.")
     void putItemIntoCartTest() throws Exception {
         // given
-        CartInfo.CartDetail cartDetail = new CartInfo.CartDetail(1L, 101L, "사과", 1000, 2);
+        CartInfo.CartDetail cartDetail = new CartInfo.CartDetail(1L, 101L, "사과", 1000, 2, 10);
         when(cartFacade.putItem(any(CartCommand.PutItem.class)))
                 .thenReturn(cartDetail);
 
@@ -68,7 +68,8 @@ public class CartControllerTest {
                 .andExpect(jsonPath("$.itemId").value(101L))
                 .andExpect(jsonPath("$.name").value("사과"))
                 .andExpect(jsonPath("$.price").value(1000))
-                .andExpect(jsonPath("$.amount").value(2));
+                .andExpect(jsonPath("$.amount").value(2))
+                .andExpect(jsonPath("$.leftStock").value(10));
     }
 
     @Test
@@ -77,8 +78,8 @@ public class CartControllerTest {
         // given
         Long userId = 1L;
         List<CartInfo.CartDetail> cartItemResponseList = List.of(
-                new CartInfo.CartDetail(1L, 101L, "사과", 1000, 3),
-                new CartInfo.CartDetail(2L, 102L, "바나나", 2000, 1)
+                new CartInfo.CartDetail(1L, 101L, "사과", 1000, 3, 10),
+                new CartInfo.CartDetail(2L, 102L, "바나나", 2000, 1, 20)
         );
 
         when(cartFacade.getCartItems(userId))
@@ -98,12 +99,13 @@ public class CartControllerTest {
                 .andExpect(jsonPath("$.items[0].name").value("사과"))
                 .andExpect(jsonPath("$.items[0].price").value(1000))
                 .andExpect(jsonPath("$.items[0].amount").value(3))
+                .andExpect(jsonPath("$.items[0].leftStock").value(10))
                 .andExpect(jsonPath("$.items[1].id").value(2L))
                 .andExpect(jsonPath("$.items[1].itemId").value(102L))
                 .andExpect(jsonPath("$.items[1].name").value("바나나"))
                 .andExpect(jsonPath("$.items[1].price").value(2000))
                 .andExpect(jsonPath("$.items[1].amount").value(1))
-                .andDo(MockMvcResultHandlers.print());
+                .andExpect(jsonPath("$.items[1].leftStock").value(20));
     }
 
     @Test

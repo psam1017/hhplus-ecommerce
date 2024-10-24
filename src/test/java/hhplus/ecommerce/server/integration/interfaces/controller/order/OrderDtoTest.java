@@ -25,12 +25,12 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
 
     @DisplayName("주문할 때 주문할 정보 배열을 보내지 않으면 유효성 검증에 실패한다.")
     @Test
-    void OrderCreateNotNull() {
+    void OrderCreateFromItemNotNull() {
         // given
-        OrderDto.OrderCreate target = new OrderDto.OrderCreate(null);
+        OrderDto.OrderCreateFromItem target = new OrderDto.OrderCreateFromItem(null);
 
         // when
-        Set<ConstraintViolation<OrderDto.OrderCreate>> validations = validator.validate(target);
+        Set<ConstraintViolation<OrderDto.OrderCreateFromItem>> validations = validator.validate(target);
 
         // then
         assertThat(validations).hasSize(1)
@@ -40,12 +40,12 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
 
     @DisplayName("주문할 때 주문할 정보 배열이 비어있으면 유효성 검증에 실패한다.")
     @Test
-    void OrderCreateNotEmpty() {
+    void OrderCreateFromItemNotEmpty() {
         // given
-        OrderDto.OrderCreate target = new OrderDto.OrderCreate(List.of());
+        OrderDto.OrderCreateFromItem target = new OrderDto.OrderCreateFromItem(List.of());
 
         // when
-        Set<ConstraintViolation<OrderDto.OrderCreate>> validations = validator.validate(target);
+        Set<ConstraintViolation<OrderDto.OrderCreateFromItem>> validations = validator.validate(target);
 
         // then
         assertThat(validations).hasSize(1)
@@ -85,14 +85,14 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
 
     @DisplayName("주문 생성 정보를 검증할 때는 주문 정보 배열의 값도 검증할 수 있다.")
     @Test
-    void OrderCreateValid() {
+    void OrderCreateFromItemValid() {
         // given
-        OrderDto.OrderCreate target = new OrderDto.OrderCreate(List.of(
+        OrderDto.OrderCreateFromItem target = new OrderDto.OrderCreateFromItem(List.of(
                 new OrderDto.OrderCreateItem(null, null)
         ));
 
         // when
-        Set<ConstraintViolation<OrderDto.OrderCreate>> validations = validator.validate(target);
+        Set<ConstraintViolation<OrderDto.OrderCreateFromItem>> validations = validator.validate(target);
 
         // then
         assertThat(validations).hasSize(2)
@@ -101,5 +101,35 @@ public class OrderDtoTest extends SpringBootTestEnvironment {
                         tuple("items[0].itemId", NotNull.class),
                         tuple("items[0].amount", NotNull.class)
                 );
+    }
+
+    @DisplayName("장바구니로 주문 생성 정보를 검증할 때는 장바구니 ID 목록을 보내지 않으면 유효성 검증에 실패한다.")
+    @Test
+    void OrderCreateFromCartNotNull() {
+        // given
+        OrderDto.OrderCreateFromCart target = new OrderDto.OrderCreateFromCart(null);
+
+        // when
+        Set<ConstraintViolation<OrderDto.OrderCreateFromCart>> validations = validator.validate(target);
+
+        // then
+        assertThat(validations).hasSize(1)
+                .extracting(cv -> tuple(cv.getPropertyPath().toString(), cv.getConstraintDescriptor().getAnnotation().annotationType()))
+                .contains(tuple("cartIds", NotEmpty.class));
+    }
+
+    @DisplayName("장바구니로 주문 생성 정보를 검증할 때는 장바구니 ID 목록이 비어있으면 유효성 검증에 실패한다.")
+    @Test
+    void OrderCreateFromCartNotEmpty() {
+        // given
+        OrderDto.OrderCreateFromCart target = new OrderDto.OrderCreateFromCart(Set.of());
+
+        // when
+        Set<ConstraintViolation<OrderDto.OrderCreateFromCart>> validations = validator.validate(target);
+
+        // then
+        assertThat(validations).hasSize(1)
+                .extracting(cv -> tuple(cv.getPropertyPath().toString(), cv.getConstraintDescriptor().getAnnotation().annotationType()))
+                .contains(tuple("cartIds", NotEmpty.class));
     }
 }

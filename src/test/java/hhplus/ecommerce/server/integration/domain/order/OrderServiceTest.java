@@ -47,14 +47,14 @@ public class OrderServiceTest extends SpringBootTestEnvironment {
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
 
-    @DisplayName("주문을 생성할 수 있다.")
+    @DisplayName("상품 ID 로 주문을 생성할 수 있다.")
     @Test
-    void createOrderAndItems() {
+    void createOrderAndItemsByItem() {
         // given
         User user = createUser("TestUser");
         Item item1 = createItem("Item1", 1000);
         Item item2 = createItem("Item2", 2000);
-        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+        OrderCommand.CreateOrderByItem command = new OrderCommand.CreateOrderByItem(
                 user.getId(),
                 List.of(
                         new OrderCommand.CreateOrderItem(item1.getId(), 1),
@@ -64,6 +64,38 @@ public class OrderServiceTest extends SpringBootTestEnvironment {
 
         // when
         Order result = sut.createOrderAndItems(command, user, List.of(item1, item2));
+
+        // then
+        assertThat(result.getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getStatus()).isEqualTo(OrderStatus.ORDERED);
+        List<OrderItem> orderItems = orderItemJpaRepository.findAllByOrderId(result.getId());
+        assertThat(orderItems).hasSize(2)
+                .extracting(oi -> tuple(oi.getName(), oi.getPrice(), oi.getQuantity(), oi.getItem().getId()))
+                .containsExactly(
+                        tuple("Item1", 1000, 1, item1.getId()),
+                        tuple("Item2", 2000, 2, item2.getId())
+                );
+    }
+
+    @DisplayName("장바구니 ID 로 주문을 생성할 수 있다.")
+    @Test
+    void createOrderAndItemsByCart() {
+        // given
+        User user = createUser("TestUser");
+        Item item1 = createItem("Item1", 1000);
+        Item item2 = createItem("Item2", 2000);
+        Map<Long, Integer> itemStockAmountMap = Map.of(
+                item1.getId(), 1,
+                item2.getId(), 2
+        );
+
+        OrderCommand.CreateOrderByCart command = new OrderCommand.CreateOrderByCart(
+                user.getId(),
+                itemStockAmountMap.keySet()
+        );
+
+        // when
+        Order result = sut.createOrderAndItems(command, user, List.of(item1, item2), itemStockAmountMap);
 
         // then
         assertThat(result.getUser().getId()).isEqualTo(user.getId());

@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.integration.application;
 
 import hhplus.ecommerce.server.application.OrderFacade;
+import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.order.Order;
@@ -10,6 +11,7 @@ import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.user.User;
+import hhplus.ecommerce.server.infrastructure.cart.CartJpaRepository;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
 import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -52,12 +55,15 @@ public class OrderFacadeTest extends SpringBootTestEnvironment {
     @Autowired
     OrderItemJpaRepository orderItemJpaRepository;
 
+    @Autowired
+    CartJpaRepository cartJpaRepository;
+
     @MockBean
     OrderDataPlatform orderDataPlatform;
 
-    @DisplayName("주문을 생성할 수 있다.")
+    @DisplayName("상품 아이디로 주문을 생성할 수 있다.")
     @Test
-    void createOrder() {
+    void createOrderByItem() {
         // given
         User user = createUser("testUser");
         createPoint(50000, user);
@@ -66,7 +72,7 @@ public class OrderFacadeTest extends SpringBootTestEnvironment {
         Item item2 = createItem("item2", 2000);
         createItemStock(20, item2);
 
-        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+        OrderCommand.CreateOrderByItem command = new OrderCommand.CreateOrderByItem(
                 user.getId(),
                 List.of(
                         new OrderCommand.CreateOrderItem(item1.getId(), 10),
@@ -88,6 +94,49 @@ public class OrderFacadeTest extends SpringBootTestEnvironment {
                         tuple(item2.getId(), item2.getName(), item2.getPrice(), 20)
                 );
         Mockito.verify(orderDataPlatform, Mockito.times(1)).saveOrderData(Mockito.anyMap());
+    }
+
+    @DisplayName("장바구니 아이디로 주문을 생성할 수 있다.")
+    @Test
+    void createOrderByCart() {
+        // given
+        User user = createUser("testUser");
+        createPoint(50000, user);
+        Item item1 = createItem("item1", 1000);
+        createItemStock(10, item1);
+        Cart cart1 = createCart(user, item1, 10);
+        Item item2 = createItem("item2", 2000);
+        createItemStock(20, item2);
+        Cart cart2 = createCart(user, item2, 20);
+
+        OrderCommand.CreateOrderByCart command = new OrderCommand.CreateOrderByCart(
+                user.getId(),
+                Set.of(cart1.getId(), cart2.getId())
+        );
+
+        // when
+        Long orderId = orderFacade.createOrder(command);
+
+        // then
+        assertThat(orderId).isNotNull();
+        Order order = orderJpaRepository.findById(orderId).orElseThrow();
+        assertThat(order.getUser().getId()).isEqualTo(user.getId());
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.ORDERED);
+        assertThat(orderItemJpaRepository.findAllByOrderId(orderId)).hasSize(2)
+                .extracting(oi -> tuple(oi.getItem().getId(), oi.getName(), oi.getPrice(), oi.getQuantity()))
+                .containsExactlyInAnyOrder(
+                        tuple(item1.getId(), item1.getName(), item1.getPrice(), 10),
+                        tuple(item2.getId(), item2.getName(), item2.getPrice(), 20)
+                );
+        Mockito.verify(orderDataPlatform, Mockito.times(1)).saveOrderData(Mockito.anyMap());
+    }
+
+    private Cart createCart(User user, Item item, int quantity) {
+        return cartJpaRepository.save(hhplus.ecommerce.server.domain.cart.Cart.builder()
+                .user(user)
+                .item(item)
+                .quantity(quantity)
+                .build());
     }
 
     @DisplayName("사용자의 주문 목록을 조회할 수 있다.")
