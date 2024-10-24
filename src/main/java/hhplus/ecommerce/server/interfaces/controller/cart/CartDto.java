@@ -24,7 +24,9 @@ public class CartDto {
             Integer price,
 
             @Schema(name = "amount", description = "상품의 수량", example = "1")
-            Integer amount
+            Integer amount,
+            @Schema(name = "leftStock", description = "상품의 재고", example = "10")
+            Integer leftStock
     ) {
         public static CartItemResponse from(CartInfo.CartDetail cartDetail) {
             return new CartItemResponse(
@@ -32,7 +34,8 @@ public class CartDto {
                     cartDetail.itemId(),
                     cartDetail.name(),
                     cartDetail.price(),
-                    cartDetail.amount()
+                    cartDetail.amount(),
+                    cartDetail.leftStock()
             );
         }
     }
