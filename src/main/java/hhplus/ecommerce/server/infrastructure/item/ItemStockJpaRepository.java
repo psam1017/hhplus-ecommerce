@@ -21,7 +21,7 @@ public interface ItemStockJpaRepository extends JpaRepository<ItemStock, Long> {
     @Query("""
             select i
             from ItemStock i
-            where i.item.id in :itemIds
+            where i.item.id = :itemId
             """)
-    List<ItemStock> findAllByItemIdWithLock(Set<Long> itemIds);
+    Optional<ItemStock> findByItemIdWithLock(Long itemId);
 }

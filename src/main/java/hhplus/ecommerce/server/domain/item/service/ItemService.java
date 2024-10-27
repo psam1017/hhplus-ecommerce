@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -62,12 +60,11 @@ public class ItemService {
     }
 
     public void deductStocks(Map<Long, Integer> itemIdStockAmountMap) {
-        Set<Long> itemIds = itemIdStockAmountMap.keySet();
-        List<ItemStock> itemStocks = itemStockRepository.findAllByItemIdWithLock(itemIds);
-
-        if (itemStocks.size() != itemIds.size()) {
-            throw new NoSuchItemStockException();
+        List<Long> itemIds = new ArrayList<>(itemIdStockAmountMap.keySet());
+        Collections.sort(itemIds);
+        for (Long itemId : itemIds) {
+            ItemStock itemStock = itemStockRepository.findByItemIdWithLock(itemId).orElseThrow(NoSuchItemStockException::new);
+            itemStock.deductStock(itemIdStockAmountMap.get(itemStock.getItem().getId()));
         }
-        itemStocks.forEach(stock -> stock.deductStock(itemIdStockAmountMap.get(stock.getItem().getId())));
     }
 }

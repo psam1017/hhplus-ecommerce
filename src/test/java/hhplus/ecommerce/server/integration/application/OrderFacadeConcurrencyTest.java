@@ -69,7 +69,7 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
 
     @DisplayName("동시에 발생한 30번의 주문 요청을 충돌 없이 처리할 수 있다.")
     @Test
-    void createOrder() throws InterruptedException {
+    void createOrder_pessimisticWriteLock() throws InterruptedException {
         // given
         int stockAmount = 10;
 
@@ -90,8 +90,7 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
 
-        for (int i = 0; i < 30; i++) {
-            User user = users.get(i);
+        for (User user : users) {
             executorService.execute(() -> {
                 try {
                     startLatch.await();
@@ -125,14 +124,92 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
         verify(orderDataPlatform, times(stockAmount)).saveOrderData(anyMap());
     }
 
+    @DisplayName("동시에 여러 상품을 주문하더라도 교착상태에 빠지지 않는다.")
+    @Test
+    void createOrder_preventDeadLock() throws InterruptedException {
+        // given
+        int stockAmount = 10;
+        int doubleStockAmount = 20;
+
+        Item itemA = createItem("itemA", 1000);
+        createItemStock(stockAmount, itemA);
+        Item itemB = createItem("itemB", 1000);
+        createItemStock(stockAmount, itemB);
+        Item itemC = createItem("itemC", 1000);
+        createItemStock(doubleStockAmount, itemC);
+
+        List<User> users = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            User user = createUser("testUser" + i);
+            createPoint(2000, user);
+            users.add(user);
+        }
+
+        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(20);
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+
+        for (int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
+            int j = i;
+            executorService.execute(() -> {
+                try {
+                    OrderCommand.CreateOrder command;
+                    if (j % 2 == 0) {
+                        command = new OrderCommand.CreateOrder(
+                                user.getId(),
+                                List.of(
+                                        new OrderCommand.CreateOrderItem(itemA.getId(), 1),
+                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1)
+                                )
+                        );
+                    } else {
+                        command = new OrderCommand.CreateOrder(
+                                user.getId(),
+                                List.of(
+                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1),
+                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1)
+                                )
+                        );
+                    }
+                    startLatch.await();
+                    orderFacade.createOrder(command);
+                    successCount.incrementAndGet();
+                } catch (OutOfItemStockException e) {
+                    failCount.incrementAndGet();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        // when
+        startLatch.countDown();
+        endLatch.await();
+
+        // then
+        assertThat(successCount.get()).isEqualTo(doubleStockAmount);
+        assertThat(failCount.get()).isEqualTo(0);
+        List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
+        assertThat(itemStocks)
+                .hasSize(3)
+                .extracting(ItemStock::getAmount)
+                .containsExactly(0, 0, 0);
+    }
+
     private User createUser(String username) {
         return userJpaRepository.save(User.builder()
                 .username(username)
                 .build());
     }
 
-    private Point createPoint(int amount, User user) {
-        return pointJpaRepository.save(Point.builder()
+    private void createPoint(int amount, User user) {
+        pointJpaRepository.save(Point.builder()
                 .amount(amount)
                 .user(user)
                 .build());
@@ -145,8 +222,8 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
                 .build());
     }
 
-    private ItemStock createItemStock(int amount, Item item) {
-        return itemStockJpaRepository.save(ItemStock.builder()
+    private void createItemStock(int amount, Item item) {
+        itemStockJpaRepository.save(ItemStock.builder()
                 .amount(amount)
                 .item(item)
                 .build());

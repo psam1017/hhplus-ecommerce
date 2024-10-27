@@ -18,11 +18,6 @@ public class ItemStockRepositoryImpl implements ItemStockRepository {
     private final ItemStockJpaRepository itemStockJpaRepository;
 
     @Override
-    public List<ItemStock> findAllByItemIdWithLock(Set<Long> itemIds) {
-        return itemStockJpaRepository.findAllByItemIdWithLock(itemIds);
-    }
-
-    @Override
     public List<ItemStock> findAllByItemIds(Set<Long> itemIds) {
         return itemStockJpaRepository.findAllByItemIdIn(itemIds);
     }
@@ -30,5 +25,10 @@ public class ItemStockRepositoryImpl implements ItemStockRepository {
     @Override
     public Optional<ItemStock> findByItemId(Long itemId) {
         return itemStockJpaRepository.findByItemId(itemId);
+    }
+
+    @Override
+    public Optional<ItemStock> findByItemIdWithLock(Long itemId) {
+        return itemStockJpaRepository.findByItemIdWithLock(itemId);
     }
 }

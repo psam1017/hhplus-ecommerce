@@ -289,25 +289,21 @@ public class ItemServiceUnitTest {
                 1L, 10,
                 2L, 20
         );
-        List<ItemStock> itemStocks = List.of(
-                buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10),
-                buildItemStock(2L, buildItem(2L, "Test Item2", 2000), 20)
-        );
+        ItemStock itemStock1 = buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10);
+        ItemStock itemStock2 = buildItemStock(2L, buildItem(2L, "Test Item2", 2000), 20);
 
-        when(itemStockRepository.findAllByItemIdWithLock(anySet()))
-                .thenReturn(itemStocks);
+        when(itemStockRepository.findByItemIdWithLock(1L))
+                .thenReturn(Optional.of(itemStock1));
+        when(itemStockRepository.findByItemIdWithLock(2L))
+                .thenReturn(Optional.of(itemStock2));
 
         // when
         sut.deductStocks(itemIdStockAmountMap);
 
         // then
-        assertThat(itemStocks)
-                .extracting(is -> tuple(is.getId(), is.getAmount()))
-                .containsExactlyInAnyOrder(
-                        tuple(1L, 0),
-                        tuple(2L, 0)
-                );
-        verify(itemStockRepository, times(1)).findAllByItemIdWithLock(anySet());
+        assertThat(itemStock1.getAmount()).isEqualTo(0);
+        assertThat(itemStock2.getAmount()).isEqualTo(0);
+        verify(itemStockRepository, times(2)).findByItemIdWithLock(anyLong());
     }
 
     @DisplayName("존재하지 않는 상품의 수량을 차감할 수 없다.")
@@ -318,19 +314,19 @@ public class ItemServiceUnitTest {
                 1L, 10,
                 2L, 20
         );
-        List<ItemStock> itemStocks = List.of(
-                buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10)
-        );
 
-        when(itemStockRepository.findAllByItemIdWithLock(anySet()))
-                .thenReturn(itemStocks);
+        ItemStock existStock = buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10);
+        when(itemStockRepository.findByItemIdWithLock(1L))
+                .thenReturn(Optional.of(existStock));
+        when(itemStockRepository.findByItemIdWithLock(2L))
+                .thenReturn(Optional.empty());
 
         // when
         // then
         assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
-        verify(itemStockRepository, times(1)).findAllByItemIdWithLock(anySet());
+        verify(itemStockRepository, times(2)).findByItemIdWithLock(anyLong());
     }
 
     private Item buildItem(Long id, String name, int price) {
