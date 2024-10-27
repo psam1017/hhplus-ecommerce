@@ -1,7 +1,6 @@
 package hhplus.ecommerce.server.integration.application;
 
 import hhplus.ecommerce.server.application.CartFacade;
-import hhplus.ecommerce.server.domain.cart.exception.NoSuchCartException;
 import hhplus.ecommerce.server.domain.cart.service.CartCommand;
 import hhplus.ecommerce.server.domain.cart.service.CartInfo;
 import hhplus.ecommerce.server.domain.item.Item;
@@ -11,7 +10,7 @@ import hhplus.ecommerce.server.infrastructure.cart.CartJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
+import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class CartFacadeTest extends SpringBootTestEnvironment {
+public class CartFacadeTest extends TransactionalTestEnvironment {
 
     @Autowired
     CartFacade cartFacade;

@@ -4,7 +4,7 @@ import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.exception.NoSuchUserException;
 import hhplus.ecommerce.server.domain.user.service.UserService;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
+import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class UserServiceTest extends SpringBootTestEnvironment {
+public class UserServiceTest extends TransactionalTestEnvironment {
 
     @Autowired
     UserService sut;

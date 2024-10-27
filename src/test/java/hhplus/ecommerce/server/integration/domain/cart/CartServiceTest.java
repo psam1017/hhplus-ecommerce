@@ -8,7 +8,7 @@ import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.cart.CartJpaRepository;
 import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
+import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class CartServiceTest extends SpringBootTestEnvironment {
+public class CartServiceTest extends TransactionalTestEnvironment {
 
     @Autowired
     CartService sut;

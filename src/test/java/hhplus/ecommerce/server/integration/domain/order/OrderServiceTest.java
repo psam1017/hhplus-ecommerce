@@ -14,7 +14,7 @@ import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
+import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.*;
 
 @Transactional
-public class OrderServiceTest extends SpringBootTestEnvironment {
+public class OrderServiceTest extends TransactionalTestEnvironment {
 
     @Autowired
     OrderService sut;

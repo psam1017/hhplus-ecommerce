@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.integration.interfaces.controller.point;
 
-import hhplus.ecommerce.server.integration.SpringBootTestEnvironment;
+import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
 import hhplus.ecommerce.server.interfaces.controller.point.PointDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SuppressWarnings("DataFlowIssue")
-public class PointDtoTest extends SpringBootTestEnvironment {
+public class PointDtoTest extends TransactionalTestEnvironment {
 
     @Autowired
     Validator validator;

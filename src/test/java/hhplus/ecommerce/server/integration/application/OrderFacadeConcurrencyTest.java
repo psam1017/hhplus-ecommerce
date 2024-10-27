@@ -14,11 +14,11 @@ import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
 import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
@@ -31,8 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-public class OrderFacadeConcurrencyTest {
+public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
 
     @Autowired
     OrderFacade orderFacade;
