@@ -1,0 +1,116 @@
+## 테스트 컨테이너의 필요성
+
+- 로컬 DB 를 사용하는 경우 범용성이 낮다.
+- 로컬 DB 커넥션을 사용하게 되면 Github Actions 나 Jenkins 같은 CI/CD 파이프라인에서 테스트하기 위한 사전준비가 필요하다. 즉, 테스트가 어렵고 환경 제약을 받게 된다.
+- H2 같은 인메모리 DB 를 사용하는 경우, 실제로 사용할 DB 와 제품 차이가 있기에 불완전하고 신뢰성도 떨어진다. 개인적으로 H2 는 JPA 관련된 버그도 있어서 그다지 선호하지 않는다.
+- 인메모리를 허용해서 H2 를 사용한다고 치더라도, Redis, Kafka 등등 의존하게 되는 외부 기술, 도구들이 많아질수록 인메모리 환경 사용에 제약 및 한계가 있다.
+- 실제 제품이 클라우드 환경에서 Cloud DB, Elastic Cache, EKS 등등을 사용한다고 치더라도 로컬 실행을 위해 여전히 컨테이너 사용은 유효하다.
+
+결론적으로, 실제 컨테이너 환경에서 돌리는 것과 유사하게, 또는 어느 환경에서도 즉시 테스트를 수행하도록 할 수 있게 테스트도 컨테이너 환경에서 실행할 수 있도록 해야 한다.
+
+## 설정 방법
+
+### 1. build.gradle
+org.springframework.boot:spring-boot-testcontainers 프레임워크를 추가한다. test containers 사이트의 Quickstart(https://java.testcontainers.org/quickstart/junit_5_quickstart/) 에서 소개하는 프레임워크를 포함 및 추가로 일부 편의성 기능을 지원하기 때문에 더욱 권장한다.
+특히 공식 사이트 Quickstart 는 3줄 추가해야 하는데, Spring Boot 로는 1줄만 추가하면 돼서 보기도 더 좋고 버전관리도 알아서 된다.
+그 외에 사용하고자 하는 컨테이너들은 testcontainers 에서 직접 추가하면 된다. 아래는 MySQL 을 추가하는 예시이다.
+
+```
+dependencies {
+
+	// test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	// https://docs.spring.io/spring-boot/reference/testing/testcontainers.html
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	// https://java.testcontainers.org/modules/databases/mysql/
+	testImplementation 'org.testcontainers:mysql'
+
+	// data
+	runtimeOnly 'com.mysql:mysql-connector-j'
+}
+```
+
+### 2. applicaion-test.yaml
+설정을 추가하는 게 아니라 오히려 빼줘야 한다.
+아래 4가지 속성을, 커스텀해야 할 게 아니라면 속성을 아예 명시하지 않음으로 스프링이 자동으로 주입해주는 설정들을 더 안전하게 사용할 수 있다.
+
+```
+# 아래 속성들을 제외!
+#spring.datasource.driver-class-name=
+#spring.datasource.url=
+#spring.datasource.username=sa
+#spring.datasource.password=
+```
+
+### 3. 테스트 환경 클래스 설정(TestContainerEnvironment.java)
+아래와 같이 설정해준다. 이 예제에서는 @TestContainers 와 @ServiceConnection 가 사용되지 않았음을 기억하자. Spring Boot 로 테스트 컨테이너를 추가한 경우 사용하지 않아도 괜찮다.
+
+```
+package hhplus.ecommerce.server.integration;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
+
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@SpringBootTest
+public class TestContainerEnvironment {
+
+    @Autowired
+    protected MockMvc mockMvc;
+
+    // 24년 10월 27일 기준, test containers 에서 명시된 mysql module 예시의 최신 버전. 'mysql:latest' 를 사용하고 싶으면 그렇게 해도 된다.
+    private static final String FULL_IMAGE_NAME = "mysql:8.0.36";
+
+    private static final MySQLContainer<?> MY_SQL_CONTAINER;
+
+    static {
+        try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse(FULL_IMAGE_NAME))) {
+            MY_SQL_CONTAINER = mySQLContainer.withReuse(true);
+            MY_SQL_CONTAINER.start();
+        }
+    }
+}
+```
+
+### 트러블 슈팅 : MySQL 이미지가 여러 개 띄워지는 현상
+처음에는 여러 블로그 및 포스트들을 참고하면서 Config 클래스에서 컨테이너 설정을 Bean 으로 등록했었다.
+그랬더니 한 번의 테스트에서 MySQL 이미지가 여러 번 띄워졌는데, 아마도 Spring Boot 컨텍스트가 업데이트될 때마다 이미지가 띄워지는 것처럼 보였다.
+그래서 Bean 등록을 취소하고, 위 TestContainerEnvironment.java 처럼 static 으로 컨테이너를 사용했더니 이러한 현상이 사라졌다.
+참고로 변경 전에 사용했던 Config 클래스는 아래와 같다.
+
+```
+package hhplus.ecommerce.server.integration;
+
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
+
+@TestConfiguration(proxyBeanMethods = false)
+public class TestContainerConfig {
+
+    private static final String FULL_IMAGE_NAME = "mysql:8.0.36";
+
+    /**
+     * DB 로 사용할 MySQLContainer 빈을 생성한다.
+     * Spring Boot 3.1 부터는 @ServiceConnection 을 사용하면 DB 컨테이너의 드라이버, URL 등등을 자동으로 설정해준다.
+     * @link <a href="https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1">Improved Testcontainers Support in Spring Boot 3.1</a>
+     * @return MySQLContainer
+     */
+    @Bean
+    @ServiceConnection
+    public MySQLContainer<?> mySQLContainer() {
+        try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse(FULL_IMAGE_NAME))) {
+            return mySQLContainer.withReuse(true);
+        }
+    }
+}
+```
