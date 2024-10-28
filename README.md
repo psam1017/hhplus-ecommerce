@@ -8,6 +8,7 @@
 - [API Spec](#API-Spec)
 - [기술스택](#기술스택)
 - [패키지 구조](#패키지-구조)
+- [동시성 제어 보고서](#동시성-제어-보고서)
 
 ---
 
@@ -192,5 +193,15 @@
 └── config
     └── Config.java
 ```
+
+</details>
+
+## 동시성 제어 보고서
+<details>
+  <summary>동시성 제어 보고서</summary>
+
+- STEP 11 과제인 동시성 제어 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[동시성 제어 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP11/docs/concurrency/note.md)
 
 </details>
