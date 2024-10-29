@@ -7,6 +7,7 @@ build/
 
 ### Custom ###
 logs/
+mysql/
 
 ### STS ###
 .apt_generated
