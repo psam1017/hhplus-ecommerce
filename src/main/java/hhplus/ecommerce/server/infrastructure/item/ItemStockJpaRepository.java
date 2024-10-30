@@ -18,6 +18,12 @@ public interface ItemStockJpaRepository extends JpaRepository<ItemStock, Long> {
     List<ItemStock> findAllByItemIdIn(Set<Long> itemIds);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(
+            @QueryHint(
+                    name = "jakarta.persistence.lock.timeout",
+                    value = "5000"
+            )
+    )
     @Query("""
             select i
             from ItemStock i
