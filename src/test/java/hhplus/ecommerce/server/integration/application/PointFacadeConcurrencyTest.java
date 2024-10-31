@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,27 +38,28 @@ public class PointFacadeConcurrencyTest extends TestContainerEnvironment {
         userJpaRepository.deleteAll();
     }
 
-    @DisplayName("동시에 발생한 10번의 요청을 충돌 없이 처리할 수 있다.")
+    @DisplayName("동시에 발생한 10번의 포인트 충전 중 한 건 이상만 성공시킬 수 있다.")
     @Test
     void chargePoint() throws InterruptedException {
         // given
         User user = createUser("testUser");
         createPoint(0, user);
+        int tryCount = 10;
+        int chargeAmount = 100;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(tryCount);
         CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch endLatch = new CountDownLatch(10);
+        CountDownLatch endLatch = new CountDownLatch(tryCount);
 
-        int totalChargeAmount = 0;
+        AtomicInteger successCount = new AtomicInteger(0);
+
         List<Runnable> tasks = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            int chargeAmount = i + 1;
-            totalChargeAmount += chargeAmount;
+        for (int i = 0; i < tryCount; i++) {
             tasks.add(() -> {
                 try {
                     startLatch.await();
-                    PointCommand.ChargePoint post = new PointCommand.ChargePoint(chargeAmount);
-                    pointFacade.chargePoint(user.getId(), post);
+                    pointFacade.chargePoint(user.getId(), new PointCommand.ChargePoint(chargeAmount));
+                    successCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -71,9 +73,11 @@ public class PointFacadeConcurrencyTest extends TestContainerEnvironment {
         startLatch.countDown();
         endLatch.await();
 
-        // then
+        // then - 컴퓨터 내부 동작, 커넥션 개수에 따라 정확하게 1건만 성공하지 않을 수 있음
         Integer point = pointFacade.getPoint(user.getId());
-        assertThat(point).isEqualTo(totalChargeAmount);
+        int success = successCount.get();
+        assertThat(success).isBetween(1, tryCount);
+        assertThat(point).isEqualTo(chargeAmount * success);
     }
 
     private User createUser(String username) {

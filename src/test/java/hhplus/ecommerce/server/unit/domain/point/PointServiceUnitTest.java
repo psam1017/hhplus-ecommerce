@@ -73,7 +73,7 @@ public class PointServiceUnitTest {
         Integer amount = 100;
         Point point = Point.builder().build();
 
-        when(pointRepository.findByUserIdWithLock(userId))
+        when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.of(point));
 
         // when
@@ -81,7 +81,7 @@ public class PointServiceUnitTest {
 
         // then
         assertThat(result).isEqualTo(point);
-        verify(pointRepository, times(1)).findByUserIdWithLock(userId);
+        verify(pointRepository, times(1)).findByUserId(userId);
     }
 
     @DisplayName("포인트를 충전할 때 포인트가 존재하지 않으면 예외가 발생한다.")
@@ -91,7 +91,7 @@ public class PointServiceUnitTest {
         Long userId = 1L;
         Integer amount = 100;
 
-        when(pointRepository.findByUserIdWithLock(userId))
+        when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.empty());
 
         // when
@@ -99,7 +99,7 @@ public class PointServiceUnitTest {
         assertThatThrownBy(() -> sut.chargePoint(userId, amount))
                 .isInstanceOf(NoSuchPointException.class)
                 .hasMessage(new NoSuchPointException().getMessage());
-        verify(pointRepository, times(1)).findByUserIdWithLock(userId);
+        verify(pointRepository, times(1)).findByUserId(userId);
     }
 
     @DisplayName("사용자의 포인트를 사용할 수 있다.")
@@ -117,7 +117,7 @@ public class PointServiceUnitTest {
         );
         Point point = Point.builder().amount(5000).build();
 
-        when(pointRepository.findByUserIdWithLock(userId))
+        when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.of(point));
 
         // when
@@ -125,7 +125,7 @@ public class PointServiceUnitTest {
 
         // then
         assertThat(point.getAmount()).isZero();
-        verify(pointRepository, times(1)).findByUserIdWithLock(userId);
+        verify(pointRepository, times(1)).findByUserId(userId);
     }
 
     @DisplayName("존재하지 않는 사용자로 포인트를 사용할 경우 예외가 발생한다.")
@@ -133,7 +133,7 @@ public class PointServiceUnitTest {
     void throwNoSuchPointExceptionWhenUsePoint() {
         // given
         Long userId = 1L;
-        when(pointRepository.findByUserIdWithLock(userId))
+        when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.empty());
 
         // when
@@ -159,7 +159,7 @@ public class PointServiceUnitTest {
         );
         Point point = Point.builder().amount(pointAmount).build();
 
-        when(pointRepository.findByUserIdWithLock(userId))
+        when(pointRepository.findByUserId(userId))
                 .thenReturn(Optional.of(point));
 
         // when
