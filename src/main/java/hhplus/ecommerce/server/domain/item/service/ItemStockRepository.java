@@ -8,9 +8,9 @@ import java.util.Set;
 
 public interface ItemStockRepository {
 
-    List<ItemStock> findAllByItemIds(Set<Long> topItems);
+    List<ItemStock> findAllByItemIds(Set<Long> itemIds);
 
     Optional<ItemStock> findByItemId(Long itemId);
 
-    Optional<ItemStock> findByItemIdWithLock(Long itemId);
+    Optional<ItemStock> findByIdWithLock(Long id);
 }

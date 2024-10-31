@@ -1,9 +1,12 @@
 package hhplus.ecommerce.server.application;
 
+import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -16,6 +19,7 @@ public class PointFacade {
     }
 
     public Integer chargePoint(Long userId, PointCommand.ChargePoint post) {
-        return pointService.chargePoint(userId, post.chargeAmount()).getAmount();
+        Point point = pointService.getPointByUserId(userId);
+        return pointService.chargePoint(point.getId(), post.chargeAmount()).getAmount();
     }
 }

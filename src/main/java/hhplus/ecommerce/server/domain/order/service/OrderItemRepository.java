@@ -12,4 +12,6 @@ public interface OrderItemRepository {
     List<OrderItem> findAllByOrderId(Long orderId);
 
     Map<Long, Integer> findOrderAmounts(List<Long> orderIds);
+
+    void deleteAll(List<OrderItem> orderItems);
 }

@@ -41,4 +41,10 @@ public class OrderService {
         orderItemRepository.saveAll(command.toOrderItems(items, order));
         return order;
     }
+
+    public void cancelOrder(Long orderId) {
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrderId(orderId);
+        orderItemRepository.deleteAll(orderItems);
+        orderRepository.deleteById(orderId);
+    }
 }

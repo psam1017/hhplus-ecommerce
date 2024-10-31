@@ -12,4 +12,6 @@ public interface OrderRepository {
     List<Order> findAllByUserId(Long userId);
 
     Optional<Order> findByIdAndUserId(Long orderId, Long userId);
+
+    void deleteById(Long orderId);
 }

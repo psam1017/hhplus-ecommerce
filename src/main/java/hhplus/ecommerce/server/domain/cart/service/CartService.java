@@ -2,10 +2,12 @@ package hhplus.ecommerce.server.domain.cart.service;
 
 import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.cart.exception.NoSuchCartException;
+import hhplus.ecommerce.server.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,9 +22,9 @@ public class CartService {
     public Cart putItem(Cart cart) {
         Optional<Cart> optCart = cartRepository.findByUserIdAndItemId(cart.getUser().getId(), cart.getItem().getId());
         if (optCart.isPresent()) {
-            Cart existCcart = optCart.get();
-            existCcart.putQuantity(cart.getQuantity());
-            return existCcart;
+            Cart existCart = optCart.get();
+            existCart.putQuantity(cart.getQuantity());
+            return existCart;
         }
         return cartRepository.save(cart);
     }

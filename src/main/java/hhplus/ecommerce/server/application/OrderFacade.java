@@ -2,24 +2,25 @@ package hhplus.ecommerce.server.application;
 
 import hhplus.ecommerce.server.domain.cart.service.CartService;
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
+import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.service.UserService;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class OrderFacade {
@@ -46,17 +47,46 @@ public class OrderFacade {
      * @param command 사용자 주문 생성에 필요한 정보
      * @return 주문 ID
      */
-    @Transactional
     public Long createOrder(OrderCommand.CreateOrder command) {
+
+        Deque<Runnable> compensationActions = new ArrayDeque<>();
+
+        try {
+            return processOrder(command, compensationActions);
+        } catch (Exception e) {
+            while (!compensationActions.isEmpty()) {
+                try {
+                    compensationActions.pop().run();
+                } catch (Exception e2) {
+                    // 로그 기록, 추가 보상 작업, 알림 전송, 모니터링 시스템 연동 등
+                    log.error("compensation action failed", e2);
+                }
+            }
+            throw e;
+        }
+    }
+
+    private Long processOrder(OrderCommand.CreateOrder command, Deque<Runnable> compensationActions) {
         Set<Long> itemIds = command.toItemIds();
         Map<Long, Integer> itemIdStockAmountMap = command.toItemMap();
-
         User user = userService.getUser(command.userId());
         List<Item> items = itemService.findItems(itemIds);
-        itemService.deductStocks(itemIdStockAmountMap);
-        pointService.usePoint(command.userId(), items, itemIdStockAmountMap);
+
+        for (Long itemId : itemIdStockAmountMap.keySet()) {
+            ItemStock itemStock = itemService.getItemStockByItemId(itemId);
+            itemService.deductStock(itemStock.getId(), itemIdStockAmountMap.get(itemId));
+            compensationActions.push(() -> itemService.restoreStock(itemStock.getId(), itemIdStockAmountMap.get(itemId)));
+        }
+
+        Point point = pointService.getPointByUserId(command.userId());
+        int usedPoint = pointService.usePoint(point.getId(), items, itemIdStockAmountMap);
+        compensationActions.push(() -> pointService.chargePoint(point.getId(), usedPoint));
+
         Order order = orderService.createOrderAndItems(command, user, items);
+        compensationActions.push(() -> orderService.cancelOrder(order.getId()));
+
         cartService.deleteCartItems(command.userId(), itemIds);
+
         orderDataPlatform.saveOrderData(itemIdStockAmountMap);
 
         return order.getId();

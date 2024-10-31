@@ -4,6 +4,7 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemException;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
+import hhplus.ecommerce.server.infrastructure.lock.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class ItemService {
 
@@ -59,12 +59,15 @@ public class ItemService {
         return itemStockRepository.findByItemId(itemId).orElseThrow(NoSuchItemStockException::new);
     }
 
-    public void deductStocks(Map<Long, Integer> itemIdStockAmountMap) {
-        List<Long> itemIds = new ArrayList<>(itemIdStockAmountMap.keySet());
-        Collections.sort(itemIds);
-        for (Long itemId : itemIds) {
-            ItemStock itemStock = itemStockRepository.findByItemIdWithLock(itemId).orElseThrow(NoSuchItemStockException::new);
-            itemStock.deductStock(itemIdStockAmountMap.get(itemStock.getItem().getId()));
-        }
+    @DistributedLock(key = "'item_stocks:' + #itemStockId")
+    public void deductStock(Long itemStockId, int amount) {
+        ItemStock itemStock = itemStockRepository.findByIdWithLock(itemStockId).orElseThrow(NoSuchItemStockException::new);
+        itemStock.deductStock(amount);
+    }
+
+    @DistributedLock(key = "'item_stocks:' + #itemStockId")
+    public void restoreStock(Long itemStockId, int amount) {
+        ItemStock itemStock = itemStockRepository.findByIdWithLock(itemStockId).orElseThrow(NoSuchItemStockException::new);
+        itemStock.addStock(amount);
     }
 }
