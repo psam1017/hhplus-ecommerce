@@ -3,33 +3,36 @@ package hhplus.ecommerce.server.integration.application;
 import hhplus.ecommerce.server.application.OrderFacade;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
+import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.point.Point;
+import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
-import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
-public class OrderFacadeTest extends TransactionalTestEnvironment {
+public class OrderFacadeTest extends TestContainerEnvironment {
 
     @Autowired
     OrderFacade orderFacade;
@@ -165,6 +168,105 @@ public class OrderFacadeTest extends TransactionalTestEnvironment {
                 .containsExactly(
                         tuple(orderItem1.getId(), item1.getName(), item1.getPrice(), orderItem1.getQuantity()),
                         tuple(orderItem2.getId(), item2.getName(), item2.getPrice(), orderItem2.getQuantity())
+                );
+    }
+
+    @DisplayName("주문 시 재고수량이 부족하면 트랜잭션 보상 로직으로 차감했던 재고를 복원할 수 있다.")
+    @Test
+    void createOrder_withNotEnoughStock() {
+        // given
+        User user = createUser("testUser");
+        createPoint(12000, user);
+        Item item1 = createItem("item1", 1000);
+        ItemStock itemStock1 = createItemStock(10, item1);
+        Item item2 = createItem("item2", 2000);
+        ItemStock itemStock2 = createItemStock(0, item2);
+
+        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+                user.getId(),
+                List.of(
+                        new OrderCommand.CreateOrderItem(item1.getId(), 10),
+                        new OrderCommand.CreateOrderItem(item2.getId(), 1)
+                ));
+
+        // when
+        // then
+        assertThatThrownBy(() -> orderFacade.createOrder(command))
+                .isInstanceOf(OutOfItemStockException.class)
+                .hasMessage(new OutOfItemStockException(0).getMessage());
+        List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
+        assertThat(itemStocks).hasSize(2)
+                .extracting(is -> tuple(is.getId(), is.getAmount()))
+                .containsExactlyInAnyOrder(
+                        tuple(itemStock1.getId(), 10),
+                        tuple(itemStock2.getId(), 0)
+                );
+    }
+
+    @DisplayName("포인트 잔액이 부족하면 트랜잭션 보상 로직으로 차감했던 재고를 복원할 수 있다.")
+    @Test
+    void createOrder_withNotEnoughPoint() {
+        // given
+        int leftPoint = 9999;
+        User user = createUser("testUser");
+        createPoint(leftPoint, user);
+        Item item = createItem("item", 1000);
+        createItemStock(10, item);
+
+        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+                user.getId(),
+                List.of(
+                        new OrderCommand.CreateOrderItem(item.getId(), 10)
+                ));
+
+        // when
+        // then
+        assertThatThrownBy(() -> orderFacade.createOrder(command))
+                .isInstanceOf(OutOfPointException.class)
+                .hasMessage(new OutOfPointException(leftPoint).getMessage());
+        ItemStock itemStock = itemStockJpaRepository.findByItemId(item.getId()).orElseThrow();
+        assertThat(itemStock.getAmount()).isEqualTo(10);
+    }
+
+    @DisplayName("주문 생성 이후에 로직이 실패하면 트랜잭션 보상 로직으로 주문을 취소하고 포인트와 재고를 복원시킬 수 있다.")
+    @Test
+    void createOrder_withFailure() {
+        // mock
+        willThrow(new RuntimeException())
+                .given(orderDataPlatform).saveOrderData(Mockito.anyMap());
+
+        // given
+        User user = createUser("testUser");
+        Point point = createPoint(50000, user);
+        Item item1 = createItem("item1", 1000);
+        createItemStock(10, item1);
+        Item item2 = createItem("item2", 2000);
+        createItemStock(20, item2);
+
+        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+                user.getId(),
+                List.of(
+                        new OrderCommand.CreateOrderItem(item1.getId(), 10),
+                        new OrderCommand.CreateOrderItem(item2.getId(), 20)
+                ));
+
+        // when
+        // then
+        assertThatThrownBy(() -> orderFacade.createOrder(command))
+                .isInstanceOf(RuntimeException.class);
+
+        assertThat(orderJpaRepository.findAll()).isEmpty();
+        assertThat(orderItemJpaRepository.findAll()).isEmpty();
+
+        point = pointJpaRepository.findById(point.getId()).orElseThrow();
+        assertThat(point.getAmount()).isEqualTo(50000);
+
+        List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
+        assertThat(itemStocks).hasSize(2)
+                .extracting(is -> tuple(is.getId(), is.getAmount()))
+                .containsExactlyInAnyOrder(
+                        tuple(item1.getId(), 10),
+                        tuple(item2.getId(), 20)
                 );
     }
 

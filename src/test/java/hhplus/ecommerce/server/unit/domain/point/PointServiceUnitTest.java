@@ -69,44 +69,44 @@ public class PointServiceUnitTest {
     @Test
     void chargePoint() {
         // given
-        Long userId = 1L;
+        Long pointId = 1L;
         Integer amount = 100;
         Point point = Point.builder().build();
 
-        when(pointRepository.findByUserId(userId))
+        when(pointRepository.findById(pointId))
                 .thenReturn(Optional.of(point));
 
         // when
-        Point result = sut.chargePoint(userId, amount);
+        Point result = sut.chargePoint(pointId, amount);
 
         // then
         assertThat(result).isEqualTo(point);
-        verify(pointRepository, times(1)).findByUserId(userId);
+        verify(pointRepository, times(1)).findById(pointId);
     }
 
     @DisplayName("포인트를 충전할 때 포인트가 존재하지 않으면 예외가 발생한다.")
     @Test
     void throwNoSuchPointExceptionWhenChargePoint() {
         // given
-        Long userId = 1L;
+        Long pointId = 1L;
         Integer amount = 100;
 
-        when(pointRepository.findByUserId(userId))
+        when(pointRepository.findById(pointId))
                 .thenReturn(Optional.empty());
 
         // when
         // then
-        assertThatThrownBy(() -> sut.chargePoint(userId, amount))
+        assertThatThrownBy(() -> sut.chargePoint(pointId, amount))
                 .isInstanceOf(NoSuchPointException.class)
                 .hasMessage(new NoSuchPointException().getMessage());
-        verify(pointRepository, times(1)).findByUserId(userId);
+        verify(pointRepository, times(1)).findById(pointId);
     }
 
     @DisplayName("사용자의 포인트를 사용할 수 있다.")
     @Test
     void usePoint() {
         // given
-        Long userId = 1L;
+        Long pointId = 1L;
         List<Item> items = List.of(
                 Item.builder().id(1L).price(1000).build(),
                 Item.builder().id(2L).price(2000).build()
@@ -117,28 +117,28 @@ public class PointServiceUnitTest {
         );
         Point point = Point.builder().amount(5000).build();
 
-        when(pointRepository.findByUserId(userId))
+        when(pointRepository.findById(pointId))
                 .thenReturn(Optional.of(point));
 
         // when
-        sut.usePoint(userId, items, itemIdStockAmountMap);
+        sut.usePoint(pointId, items, itemIdStockAmountMap);
 
         // then
         assertThat(point.getAmount()).isZero();
-        verify(pointRepository, times(1)).findByUserId(userId);
+        verify(pointRepository, times(1)).findById(pointId);
     }
 
-    @DisplayName("존재하지 않는 사용자로 포인트를 사용할 경우 예외가 발생한다.")
+    @DisplayName("존재하지 않는 포인트를 사용할 경우 예외가 발생한다.")
     @Test
     void throwNoSuchPointExceptionWhenUsePoint() {
         // given
-        Long userId = 1L;
-        when(pointRepository.findByUserId(userId))
+        Long pointId = 1L;
+        when(pointRepository.findById(pointId))
                 .thenReturn(Optional.empty());
 
         // when
         // then
-        assertThatThrownBy(() -> sut.usePoint(userId, List.of(), Map.of()))
+        assertThatThrownBy(() -> sut.usePoint(pointId, List.of(), Map.of()))
                 .isInstanceOf(NoSuchPointException.class)
                 .hasMessage(new NoSuchPointException().getMessage());
     }
@@ -147,7 +147,7 @@ public class PointServiceUnitTest {
     @Test
     void throwOutOfPointExceptionWhenUsePoint() {
         // given
-        Long userId = 1L;
+        Long pointId = 1L;
         int pointAmount = 4999;
         List<Item> items = List.of(
                 Item.builder().id(1L).price(1000).build(),
@@ -159,12 +159,12 @@ public class PointServiceUnitTest {
         );
         Point point = Point.builder().amount(pointAmount).build();
 
-        when(pointRepository.findByUserId(userId))
+        when(pointRepository.findById(pointId))
                 .thenReturn(Optional.of(point));
 
         // when
         // then
-        assertThatThrownBy(() -> sut.usePoint(userId, items, itemIdStockAmountMap))
+        assertThatThrownBy(() -> sut.usePoint(pointId, items, itemIdStockAmountMap))
                 .isInstanceOf(OutOfPointException.class)
                 .hasMessage(new OutOfPointException(pointAmount).getMessage());
     }

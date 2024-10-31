@@ -5,15 +5,16 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
+import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
-import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,16 +57,6 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
 
     @MockBean
     OrderDataPlatform orderDataPlatform;
-
-    @AfterEach
-    void tearDown() {
-        orderItemJpaRepository.deleteAll();
-        orderJpaRepository.deleteAll();
-        itemStockJpaRepository.deleteAll();
-        itemJpaRepository.deleteAll();
-        pointJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-    }
 
     @DisplayName("동시에 발생한 30번의 주문 요청을 충돌 없이 처리할 수 있다.")
     @Test
@@ -158,6 +149,7 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
             executorService.execute(() -> {
                 try {
                     OrderCommand.CreateOrder command;
+                    // 일부러 교착상태에 빠질 수 있는 상황을 유도하기 위해 한번은 오름차순, 한번은 내림차순으로 주문을 요청한다.
                     if (j % 2 == 0) {
                         command = new OrderCommand.CreateOrder(
                                 user.getId(),
@@ -170,8 +162,8 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
                         command = new OrderCommand.CreateOrder(
                                 user.getId(),
                                 List.of(
-                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1),
-                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1)
+                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1),
+                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1)
                                 )
                         );
                     }

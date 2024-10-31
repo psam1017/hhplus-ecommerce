@@ -185,6 +185,29 @@ public class OrderServiceUnitTest {
         verify(orderItemRepository, times(1)).findOrderAmounts(orderIds);
     }
 
+    @DisplayName("주문을 취소할 수 있다.")
+    @Test
+    void cancelOrder() {
+        // given
+        Long orderId = 1L;
+        Order order = buildOrder(orderId, buildUser(1L));
+
+        List<OrderItem> orderItems = List.of(
+                buildOrderItem(1L, "Item1", 1000, 1, order, buildItem(1L)),
+                buildOrderItem(2L, "Item2", 2000, 2, order, buildItem(2L))
+        );
+
+        when(orderItemRepository.findAllByOrderId(orderId)).thenReturn(orderItems);
+
+        // when
+        sut.cancelOrder(orderId);
+
+        // then
+        verify(orderItemRepository, times(1)).findAllByOrderId(orderId);
+        verify(orderItemRepository, times(1)).deleteAll(orderItems);
+        verify(orderRepository, times(1)).deleteById(orderId);
+    }
+
     private User buildUser(Long userId) {
         return User.builder().id(userId).build();
     }

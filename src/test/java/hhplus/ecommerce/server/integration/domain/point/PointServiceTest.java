@@ -6,10 +6,10 @@ import hhplus.ecommerce.server.domain.point.exception.NoSuchPointException;
 import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class PointServiceTest extends TransactionalTestEnvironment {
+public class PointServiceTest extends TestContainerEnvironment {
 
     @Autowired
     PointService sut;
@@ -70,11 +70,13 @@ public class PointServiceTest extends TransactionalTestEnvironment {
         // given
         int leftPoint = 100;
         User user = createUser("testUser");
-        createPoint(leftPoint, user);
+        Point point = createPoint(leftPoint, user);
+        System.out.println("user.getId() = " + user.getId());
+        System.out.println("point.getId() = " + point.getId());
         int chargeAmount = 50;
 
         // when
-        Point result = sut.chargePoint(user.getId(), chargeAmount);
+        Point result = sut.chargePoint(point.getId(), chargeAmount);
 
         // then
         assertThat(result).isNotNull();
@@ -86,12 +88,12 @@ public class PointServiceTest extends TransactionalTestEnvironment {
     @Test
     void throwNoSuchPointExceptionWhenChargePoint() {
         // given
-        Long nonExistentUserId = 999L;
+        Long nonExistentPointId = 999L;
         int chargeAmount = 50;
 
         // when
         // then
-        assertThatThrownBy(() -> sut.chargePoint(nonExistentUserId, chargeAmount))
+        assertThatThrownBy(() -> sut.chargePoint(nonExistentPointId, chargeAmount))
                 .isInstanceOf(NoSuchPointException.class)
                 .hasMessage(new NoSuchPointException().getMessage());
     }
@@ -101,7 +103,7 @@ public class PointServiceTest extends TransactionalTestEnvironment {
     void usePoint() {
         // given
         User user = createUser("testUser");
-        createPoint(5000, user);
+        Point point = createPoint(5000, user);
         Item item1 = createItem("Item1", 1000);
         Item item2 = createItem("Item2", 2000);
 
@@ -111,7 +113,7 @@ public class PointServiceTest extends TransactionalTestEnvironment {
         );
 
         // when
-        sut.usePoint(user.getId(), List.of(item1, item2), itemIdStockAmountMap);
+        sut.usePoint(point.getId(), List.of(item1, item2), itemIdStockAmountMap);
 
         // then
         Point result = pointJpaRepository.findByUserId(user.getId()).orElseThrow(NoSuchPointException::new);
@@ -122,11 +124,11 @@ public class PointServiceTest extends TransactionalTestEnvironment {
     @Test
     void throwNoSuchPointExceptionWhenUsePoint() {
         // given
-        Long nonExistentUserId = 999L;
+        Long nonExistentPointId = 999L;
 
         // when
         // then
-        assertThatThrownBy(() -> sut.usePoint(nonExistentUserId, List.of(), Map.of()))
+        assertThatThrownBy(() -> sut.usePoint(nonExistentPointId, List.of(), Map.of()))
                 .isInstanceOf(NoSuchPointException.class)
                 .hasMessage(new NoSuchPointException().getMessage());
     }
@@ -137,7 +139,7 @@ public class PointServiceTest extends TransactionalTestEnvironment {
         // given
         int pointAmount = 4999;
         User user = createUser("testUser");
-        createPoint(pointAmount, user);
+        Point point = createPoint(pointAmount, user);
         Item item1 = createItem("Item1", 1000);
         Item item2 = createItem("Item2", 2000);
 
@@ -148,7 +150,7 @@ public class PointServiceTest extends TransactionalTestEnvironment {
 
         // when
         // then
-        assertThatThrownBy(() -> sut.usePoint(user.getId(), List.of(item1, item2), itemIdStockAmountMap))
+        assertThatThrownBy(() -> sut.usePoint(point.getId(), List.of(item1, item2), itemIdStockAmountMap))
                 .isInstanceOf(OutOfPointException.class)
                 .hasMessage(new OutOfPointException(pointAmount).getMessage());
     }

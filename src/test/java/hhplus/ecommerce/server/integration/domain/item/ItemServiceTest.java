@@ -123,66 +123,6 @@ public class ItemServiceTest extends TestContainerEnvironment {
                 .hasMessage(new NoSuchItemException().getMessage());
     }
 
-    @DisplayName("상품을 원하는 수량만큼 차감할 수 있다.")
-    @Test
-    void deductStocks() {
-        // given
-        int stockAmount1 = 10;
-        Item item1 = createItem("Test Item1", 1000);
-        ItemStock itemStock1 = createItemStock(stockAmount1, item1);
-
-        int stockAmount2 = 20;
-        Item item2 = createItem("Test Item2", 2000);
-        ItemStock itemStock2 = createItemStock(stockAmount2, item2);
-
-        Map<Long, Integer> itemIdStockAmountMap = Map.of(
-                item1.getId(), stockAmount1,
-                item2.getId(), stockAmount2
-        );
-
-        // when
-        sut.deductStocks(itemIdStockAmountMap);
-
-        // then
-        List<ItemStock> itemStocks = itemStockJpaRepository.findAllByItemIdIn(itemIdStockAmountMap.keySet());
-        assertThat(itemStocks).hasSize(2)
-                .extracting(is -> tuple(is.getId(), is.getItem().getId(), is.getAmount()))
-                .containsExactlyInAnyOrder(
-                        tuple(itemStock1.getId(), item1.getId(), 0),
-                        tuple(itemStock2.getId(), item2.getId(), 0)
-                );
-    }
-
-    @DisplayName("존재하지 않는 아이디로 상품 재고를 차감할 경우 예외가 발생한다.")
-    @Test
-    void throwNoSuchItemStockExceptionWhenDeductStocks() {
-        // given
-        Map<Long, Integer> itemIdStockAmountMap = Map.of(1L, 10, 2L, 20);
-
-        // when
-        // then
-        assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
-                .isInstanceOf(NoSuchItemStockException.class)
-                .hasMessage(new NoSuchItemStockException().getMessage());
-    }
-
-    @DisplayName("재고가 부족하면 상품 재고를 차감할 수 없다.")
-    @Test
-    void throwNoSuchItemStockExceptionWhenDeductStocksNotEnoughStock() {
-        // given
-        int stockAmount = 10;
-        Item item = createItem("Test Item", 1000);
-        createItemStock(stockAmount, item);
-
-        Map<Long, Integer> itemIdStockAmountMap = Map.of(item.getId(), stockAmount + 1);
-
-        // when
-        // then
-        assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
-                .isInstanceOf(OutOfItemStockException.class)
-                .hasMessage(new OutOfItemStockException(stockAmount).getMessage());
-    }
-
     @DisplayName("상품을 조회할 수 있다.")
     @Test
     void getItem() {
@@ -269,6 +209,68 @@ public class ItemServiceTest extends TestContainerEnvironment {
         // when
         // then
         assertThatThrownBy(() -> sut.getItemStockByItemId(itemId))
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
+    }
+
+    @DisplayName("상품의 재고수량을 차감할 수 있다.")
+    @Test
+    void deductStock() {
+        // given
+        int stockAmount = 10;
+        int deductAmount = 5;
+        Item item = createItem("Test Item", 1000);
+        ItemStock itemStock = createItemStock(stockAmount, item);
+
+        // when
+        sut.deductStock(item.getId(), deductAmount);
+
+        // then
+        ItemStock result = itemStockJpaRepository.findById(itemStock.getId()).orElseThrow();
+        assertThat(result.getAmount()).isEqualTo(stockAmount - deductAmount);
+    }
+
+    @DisplayName("존재하지 않는 아이디로 상품 재고수량을 차감할 경우 예외가 발생한다.")
+    @Test
+    void throwNoSuchItemStockExceptionWhenDeductStock() {
+        // given
+        Long itemStockId = 1L;
+        int deductAmount = 5;
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.deductStock(itemStockId, deductAmount))
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
+    }
+
+    @DisplayName("상품의 재고수량을 복원할 수 있다.")
+    @Test
+    void restoreStock() {
+        // given
+        int stockAmount = 10;
+        int restoreAmount = 5;
+        Item item = createItem("Test Item", 1000);
+        ItemStock itemStock = createItemStock(stockAmount, item);
+
+        // when
+        sut.restoreStock(item.getId(), restoreAmount);
+
+        // then
+        ItemStock result = itemStockJpaRepository.findById(itemStock.getId()).orElseThrow();
+        assertThat(result.getAmount()).isEqualTo(stockAmount + restoreAmount);
+    }
+
+    @DisplayName("존재하지 않는 아이디로 상품 재고수량을 복원할 경우 예외가 발생한다.")
+    @Test
+    void throwNoSuchItemStockExceptionWhenRestoreStock() {
+        // given
+        Long itemStockId = 1L;
+        int restoreAmount = 5;
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.restoreStock(itemStockId, restoreAmount))
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
     }

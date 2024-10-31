@@ -9,12 +9,12 @@ import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
-@Transactional
-public class OrderServiceTest extends TransactionalTestEnvironment {
+public class OrderServiceTest extends TestContainerEnvironment {
 
     @Autowired
     OrderService sut;
@@ -108,7 +107,7 @@ public class OrderServiceTest extends TransactionalTestEnvironment {
         Order result = sut.getOrder(order.getId(), user.getId());
 
         // then
-        assertThat(result).isEqualTo(order);
+        assertThat(result.getId()).isEqualTo(order.getId());
     }
 
     @DisplayName("존재하지 않는 주문을 조회할 경우 예외가 발생한다.")
@@ -169,6 +168,25 @@ public class OrderServiceTest extends TransactionalTestEnvironment {
         assertThat(result).hasSize(2)
                 .containsEntry(order1.getId(), 1000)
                 .containsEntry(order2.getId(), 4000);
+    }
+
+    @DisplayName("주문을 취소할 수 있다.")
+    @Test
+    void cancelOrder() {
+        // given
+        User user = createUser("TestUser");
+        Order order = createOrder(user);
+        Item item1 = createItem("Item1", 1000);
+        Item item2 = createItem("Item2", 2000);
+        createOrderItem("Item1", 1000, 1, order, item1);
+        createOrderItem("Item2", 2000, 2, order, item2);
+
+        // when
+        sut.cancelOrder(order.getId());
+
+        // then
+        assertThat(orderJpaRepository.findById(order.getId())).isEmpty();
+        assertThat(orderItemJpaRepository.findAllByOrderId(order.getId())).isEmpty();
     }
 
     private User createUser(String username) {

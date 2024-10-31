@@ -4,16 +4,16 @@ import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PointFacadeTest extends TransactionalTestEnvironment {
+public class PointFacadeTest extends TestContainerEnvironment {
 
     @Autowired
     PointFacade pointFacade;

@@ -4,8 +4,8 @@ import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.point.PointJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,19 +32,13 @@ public class PointFacadeConcurrencyTest extends TestContainerEnvironment {
     @Autowired
     PointJpaRepository pointJpaRepository;
 
-    @AfterEach
-    void tearDown() {
-        pointJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-    }
-
-    @DisplayName("동시에 발생한 10번의 포인트 충전 중 한 건 이상만 성공시킬 수 있다.")
+    @DisplayName("동시에 발생한 포인트 충전 요청은 낙관적 락에 의해 한 건씩만 성공할 수 있다.")
     @Test
     void chargePoint() throws InterruptedException {
         // given
         User user = createUser("testUser");
         createPoint(0, user);
-        int tryCount = 10;
+        int tryCount = 20;
         int chargeAmount = 100;
 
         ExecutorService executorService = Executors.newFixedThreadPool(tryCount);
@@ -73,11 +67,11 @@ public class PointFacadeConcurrencyTest extends TestContainerEnvironment {
         startLatch.countDown();
         endLatch.await();
 
-        // then - 컴퓨터 내부 동작, 커넥션 개수에 따라 정확하게 1건만 성공하지 않을 수 있음
+        // then
+        // 컴퓨터 내부 동작, 커넥션풀 크기에 따라 1건 이상이 성공할 수 있음
         Integer point = pointFacade.getPoint(user.getId());
-        int success = successCount.get();
-        assertThat(success).isBetween(1, tryCount);
-        assertThat(point).isEqualTo(chargeAmount * success);
+        assertThat(successCount.get()).isGreaterThanOrEqualTo(1);
+        assertThat(point).isEqualTo(chargeAmount * successCount.get());
     }
 
     private User createUser(String username) {

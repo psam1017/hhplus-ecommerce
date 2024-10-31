@@ -16,10 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -281,52 +278,78 @@ public class ItemServiceUnitTest {
         verify(itemStockRepository, times(1)).findByItemId(id);
     }
 
-    @DisplayName("상품을 원하는 수량만큼 차감할 수 있다.")
+    @DisplayName("상품의 재고수량을 차감할 수 있다.")
     @Test
     void deductStock() {
         // given
-        Map<Long, Integer> itemIdStockAmountMap = Map.of(
-                1L, 10,
-                2L, 20
-        );
-        ItemStock itemStock1 = buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10);
-        ItemStock itemStock2 = buildItemStock(2L, buildItem(2L, "Test Item2", 2000), 20);
+        Long itemStockId = 1L;
+        int amount = 10;
 
-        when(itemStockRepository.findByItemIdWithLock(1L))
-                .thenReturn(Optional.of(itemStock1));
-        when(itemStockRepository.findByItemIdWithLock(2L))
-                .thenReturn(Optional.of(itemStock2));
+        ItemStock itemStock = buildItemStock(itemStockId, buildItem(1L, "Test Item", 1000), 20);
+        when(itemStockRepository.findByIdWithLock(itemStockId))
+                .thenReturn(Optional.of(itemStock));
 
         // when
-        sut.deductStocks(itemIdStockAmountMap);
+        sut.deductStock(itemStockId, amount);
 
         // then
-        assertThat(itemStock1.getAmount()).isEqualTo(0);
-        assertThat(itemStock2.getAmount()).isEqualTo(0);
-        verify(itemStockRepository, times(2)).findByItemIdWithLock(anyLong());
+        assertThat(itemStock.getAmount()).isEqualTo(10);
+        verify(itemStockRepository, times(1)).findByIdWithLock(itemStockId);
     }
 
-    @DisplayName("존재하지 않는 상품의 수량을 차감할 수 없다.")
+    @DisplayName("존재하지 않는 상품의 재고수량을 차감할 수 없다.")
     @Test
-    void throwNoSuchItemExceptionWhenDeductStock() {
+    void throwNoSuchItemStockExceptionWhenDeductStock() {
         // given
-        Map<Long, Integer> itemIdStockAmountMap = Map.of(
-                1L, 10,
-                2L, 20
-        );
+        Long itemStockId = 1L;
+        int amount = 10;
 
-        ItemStock existStock = buildItemStock(1L, buildItem(1L, "Test Item1", 1000), 10);
-        when(itemStockRepository.findByItemIdWithLock(1L))
-                .thenReturn(Optional.of(existStock));
-        when(itemStockRepository.findByItemIdWithLock(2L))
+        when(itemStockRepository.findByIdWithLock(itemStockId))
                 .thenReturn(Optional.empty());
 
         // when
         // then
-        assertThatThrownBy(() -> sut.deductStocks(itemIdStockAmountMap))
+        assertThatThrownBy(() -> sut.deductStock(itemStockId, amount))
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
-        verify(itemStockRepository, times(2)).findByItemIdWithLock(anyLong());
+        verify(itemStockRepository, times(1)).findByIdWithLock(itemStockId);
+    }
+
+    @DisplayName("상품의 재고수량을 복원할 수 있다.")
+    @Test
+    void restoreStock() {
+        // given
+        Long itemStockId = 1L;
+        int amount = 10;
+
+        ItemStock itemStock = buildItemStock(itemStockId, buildItem(1L, "Test Item", 1000), 20);
+        when(itemStockRepository.findByIdWithLock(itemStockId))
+                .thenReturn(Optional.of(itemStock));
+
+        // when
+        sut.restoreStock(itemStockId, amount);
+
+        // then
+        assertThat(itemStock.getAmount()).isEqualTo(30);
+        verify(itemStockRepository, times(1)).findByIdWithLock(itemStockId);
+    }
+
+    @DisplayName("존재하지 않는 상품의 재고수량을 복원할 수 없다.")
+    @Test
+    void throwNoSuchItemStockExceptionWhenRestoreStock() {
+        // given
+        Long itemStockId = 1L;
+        int amount = 10;
+
+        when(itemStockRepository.findByIdWithLock(itemStockId))
+                .thenReturn(Optional.empty());
+
+        // when
+        // then
+        assertThatThrownBy(() -> sut.restoreStock(itemStockId, amount))
+                .isInstanceOf(NoSuchItemStockException.class)
+                .hasMessage(new NoSuchItemStockException().getMessage());
+        verify(itemStockRepository, times(1)).findByIdWithLock(itemStockId);
     }
 
     private Item buildItem(Long id, String name, int price) {
