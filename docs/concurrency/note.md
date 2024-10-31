@@ -6,6 +6,7 @@
 - [동시성 제어를 위한 락](#동시성-제어를-위한-락)
 - [데드락](#데드락)
 - [동시성 제어 방식](#동시성-제어-방식)
+- [락 시간 측정 테스트](#락-시간-측정-테스트)
 - [트러블 슈팅](#트러블-슈팅)
 
 ---
@@ -465,6 +466,134 @@ Redis 는 RedLock 이라고 하는 분산락을 제공합니다.
 Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 존재합니다. 구현 난이도도 낮은 편이며 조사했을 때 체감상 가장 많은 레퍼런스와 블로그 포스트가 존재했습니다. 이는 그만큼 사용자 층도 두텁다는 뜻이리라 생각합니다.
 
 하지만 RedLock 에는 알고리즘적 한계가 있기 때문에 이후 시간적 여유가 허락된다면 Kafka 의 도입도 시도해보고자 합니다.
+
+</details>
+
+## 락 시간 측정 테스트
+
+<details>
+  <summary>락 시간 측정 테스트</summary>
+
+> 시간 측정 테스트 코드는 STEP 12+ 브랜치에 반영되어 있습니다.
+> 
+> 전체 테스트 코드는 [여기](https://github.com/psam1017/hhplus-ecommerce/blob/STEP12%2B/src/test/java/hhplus/ecommerce/server/integration/infrastructure/lock/LockComparisionTest.java)를 참조해주세요.
+
+언급된 여러 락 중에서, 제가 적용한 락은 낙관적 락, 비관적 락, 분산락 3가지였습니다.
+
+스레드 락은 멀티 서버 환경에서 동시성을 제어할 수 없기에 적용 및 테스트할 가치를 느끼지 못 했습니다.
+
+한편 카프카는 구현 난이도가 높아 이번에는 성능 비교 테스트를 생략했습니다.
+
+```
+
+    @DisplayName("낙관적 락, 비관적 락, 분산락 사이의 시간 차이를 명확하게 비교할 수 있다.")
+    @Test
+    void compareLock() throws InterruptedException {
+        // given
+        int tryCount = 5;
+        long millis = 100;
+        Point point = createPoint();
+
+        // when 1 - 낙관적 락
+        ExecutorService executorService = Executors.newFixedThreadPool(tryCount);
+        CountDownLatch startLatch1 = new CountDownLatch(1);
+        CountDownLatch endLatch1 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch1.await();
+                    userFinder.findWithOptimisticLock(point.getId(), millis);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch1.countDown();
+                }
+            });
+        }
+
+        long startMillis = System.currentTimeMillis();
+        startLatch1.countDown();
+        endLatch1.await();
+        long optimisticLockDuration = System.currentTimeMillis() - startMillis;
+
+        // when 2 - 비관적 락
+        CountDownLatch startLatch2 = new CountDownLatch(1);
+        CountDownLatch endLatch2 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch2.await();
+                    userFinder.findWithPessimisticLock(point.getId(), millis);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch2.countDown();
+                }
+            });
+        }
+
+        startMillis = System.currentTimeMillis();
+        startLatch2.countDown();
+        endLatch2.await();
+        long pessimisticLockDuration = System.currentTimeMillis() - startMillis;
+
+        // when 3 - 분산락
+        CountDownLatch startLatch3 = new CountDownLatch(1);
+        CountDownLatch endLatch3 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch3.await();
+                    userFinder.findWithDistributionLock(point.getId(), millis);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch3.countDown();
+                }
+            });
+        }
+
+        startMillis = System.currentTimeMillis();
+        startLatch3.countDown();
+        endLatch3.await();
+        long distributionLockDuration = System.currentTimeMillis() - startMillis;
+
+        // then
+        assertThat(optimisticLockDuration).isLessThan(pessimisticLockDuration); // (1)
+        assertThat(optimisticLockDuration).isLessThan(distributionLockDuration); // (2)
+        assertThat(pessimisticLockDuration).isLessThanOrEqualTo(distributionLockDuration); // (3)
+    }
+
+```
+
+테스트 의도는 다음과 같습니다.
+
+어떤 레코드를 가져올 때마다 의도적으로 시간지연을 발생시킵니다. 위 테스트에서는 일괄적으로 0.1 초의 지연이 적용되어 있습니다.
+  1) 낙관적 락은 서로의 작업을 대기하지 않으므로 0.1초의 지연이 중첩되어 적용될 것이라 예상했습니다.
+  2) 비관적 락은 서로의 작업을 대기하므로 0.1초의 지연이 중첩되지 않고 요청 횟수 만큼 지연될 것이라 예상했습니다.
+  3) 분산락의 성능을 측정한 과정이 재밌습니다.
+      1) 분산락을 걸고, 트랜잭션 안에서는 DB 락을 낙관적 락으로 조회를 하더라도 분산락을 기다리는 시간이 있기 때문에 비관적 락과 동일한, 혹은 초과한 지연이 발생할 것이라 예상했습니다.
+      2) 분산락을 걸고, 트랜잭션 안에서는 DB 락을 비관적 락으로 조회하면 비관적 락 행동에 추가로 분산락 획득 및 반납 과정이 생기기 때문에 무조건 비관적 락보다 확실하게 긴 지연이 발생할 것이라 예상했습니다.
+
+위 테스트를 @RepeatedTest 를 사용해서 100번 정도 돌려보았고, 위의 추측 중 낙관적 락과 비관적 락에 대한 추측은 예상대로였습니다.
+  - 테스트 주석 (1) 의 결과로, 낙관적 락은 언제나 비관적 락보다 조회 시간이 빨랐습니다. 약 0.1xx초 정도의 시간이 걸렸습니다.
+  - 테스트 주석 (2) 의 결과로, 낙관적 락은 언제나 분산락보다 조회 시간이 빨랐습니다. 약 0.5xx초 정도의 시간이 걸렸습니다.
+
+하지만 테스트 주석 (3) 의 결과, 비관적 락이 무조건 분산락보다 빠르다고는 할 수 없음을 확인할 수 있었습니다.
+  - 분산락(낙관적 락) 테스트 결과, 100번에 1번 정도는 분산락이 더 빠르게 시간이 측정되었습니다. 낙관적 락은 DB 에 레코드를 잠그지 않고 바로 조회하기 때문에 어느 정도 기대와 다를 수는 있겠다고 내심 생각하고 있었습니다.
+  ![lock-comparision-1](https://github.com/user-attachments/assets/0fd9db6d-6a17-4ddd-aaf3-af2d9244d8e5)
+
+  - 분산락(비관적 락) 테스트 결과, 기대했던 것과 달리 여전히 100번에 1번 정도는 분산락이 더 빠르게 시간이 측정되었습니다. 비록 분산락 내부 트랜잭션에서도 비관적 락을 사용했음에도 불구하고 말이죠.
+  ![lock-comparision-2](https://github.com/user-attachments/assets/9c0a7f44-015c-424d-b3c0-a61efb0d4ae9)
+
+비관적 락과 분산락 비교를 위해 스레드 개수를 훨씬 크게 잡으면 또 다르게 동작할 가능성도 있지만, 만약 둘 사이에 정말로 확실한 성능 차이가 있다면 동시 요청 횟수가 적더라도 언제나 똑같은 결과를 내야 한다고 생각하고 스레드를 다소 작게 설정하고 반복 테스트로 검증하였습니다.
+
+그러한 가정 하에 두 방식의 조회 성능은, 적은 수의 동시 요청 하에서 가끔은 Java 의 System.currentTimeMillis() 의 오차보다 더 적게 차이가 날 정도로 미비하다는 결론을 도출했습니다.
+
+언급했던 것처럼 Redis 가 메모리 기반으로 동작하기 때문에 높은 성능의 락 제어를 제공한다는 사실을 테스트를 통해 확인할 수 있었습니다.
 
 </details>
 
