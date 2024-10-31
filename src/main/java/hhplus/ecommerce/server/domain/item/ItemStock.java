@@ -9,7 +9,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "item_stocks")
+@Table(
+        name = "item_stocks",
+        indexes = {
+                @Index(name = "idx_item_stocks_item_id", columnList = "item_id")
+        }
+)
 @Entity
 public class ItemStock {
 
@@ -20,7 +25,10 @@ public class ItemStock {
     private int amount;
 
     @OneToOne
-    @JoinColumn(name = "item_id")
+    @JoinColumn(
+            name = "item_id",
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private Item item;
 
     @Builder
@@ -39,5 +47,9 @@ public class ItemStock {
         if (this.amount < amount) {
             throw new OutOfItemStockException(this.amount);
         }
+    }
+
+    public void addStock(int amount) {
+        this.amount += amount;
     }
 }

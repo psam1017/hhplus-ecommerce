@@ -10,7 +10,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "carts")
+@Table(
+        name = "carts",
+        indexes = {
+                @Index(name = "idx_carts_user_id", columnList = "user_id"),
+                @Index(name = "idx_carts_item_id", columnList = "item_id")
+        }
+)
 @Entity
 public class Cart {
 
@@ -21,11 +27,17 @@ public class Cart {
     private int quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(
+            name = "user_id",
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
+    @JoinColumn(
+            name = "item_id",
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private Item item;
 
     @Builder

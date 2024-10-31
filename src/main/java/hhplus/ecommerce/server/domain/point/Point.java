@@ -10,7 +10,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "points")
+@Table(
+        name = "points",
+        indexes = {
+                @Index(name = "idx_points_user_id", columnList = "user_id")
+        }
+)
 @Entity
 public class Point {
 
@@ -21,7 +26,10 @@ public class Point {
     private int amount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(
+            name = "user_id",
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private User user;
 
     @Version
@@ -43,5 +51,9 @@ public class Point {
             throw new OutOfPointException(this.amount);
         }
         this.amount -= amount;
+    }
+
+    public void addPoint(int amount) {
+        this.amount += amount;
     }
 }
