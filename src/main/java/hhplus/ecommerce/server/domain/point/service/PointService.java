@@ -22,13 +22,13 @@ public class PointService {
     }
 
     public Point chargePoint(Long userId, Integer amount) {
-        Point point = pointRepository.findByUserIdWithLock(userId).orElseThrow(NoSuchPointException::new);
+        Point point = pointRepository.findByUserId(userId).orElseThrow(NoSuchPointException::new);
         point.charge(amount);
         return point;
     }
 
     public void usePoint(Long userId, List<Item> items, Map<Long, Integer> itemIdStockAmountMap) {
-        Point point = pointRepository.findByUserIdWithLock(userId).orElseThrow(NoSuchPointException::new);
+        Point point = pointRepository.findByUserId(userId).orElseThrow(NoSuchPointException::new);
         int totalPrice = calculateTotalPrice(itemIdStockAmountMap, items);
         point.usePoint(totalPrice);
     }

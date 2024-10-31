@@ -24,6 +24,9 @@ public class Point {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Version
+    private Long version;
+
     @Builder
     protected Point(Long id, int amount, User user) {
         this.id = id;
