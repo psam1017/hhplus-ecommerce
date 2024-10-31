@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.item;
+package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.Item;
 import org.springframework.data.jpa.repository.JpaRepository;

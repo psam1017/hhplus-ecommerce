@@ -5,6 +5,7 @@ plugins {
 }
 
 group = 'hhplus.e-commerce'
+version = '0.0.1-SNAPSHOT'
 
 java {
 	sourceCompatibility = '17'
@@ -27,8 +28,14 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	// https://docs.spring.io/spring-boot/reference/testing/testcontainers.html
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	// https://java.testcontainers.org/quickstart/junit_5_quickstart/
+	testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+	testImplementation "org.testcontainers:testcontainers:1.20.3"
+	testImplementation "org.testcontainers:junit-jupiter:1.20.3"
 	// https://java.testcontainers.org/modules/databases/mysql/
 	testImplementation 'org.testcontainers:mysql'
+	// https://testcontainers.com/modules/redis/
+	testImplementation 'com.redis:testcontainers-redis:2.2.2'
 
 	// web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -45,6 +52,9 @@ dependencies {
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// https://redisson.org/docs/integration-with-spring/#spring-data-redis
+	implementation 'org.redisson:redisson-spring-data-32:3.37.0'
 
 	// product
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'

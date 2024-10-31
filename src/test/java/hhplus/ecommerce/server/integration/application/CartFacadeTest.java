@@ -6,11 +6,11 @@ import hhplus.ecommerce.server.domain.cart.service.CartInfo;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.cart.CartJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
-import hhplus.ecommerce.server.infrastructure.user.UserJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.cart.CartJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class CartFacadeTest extends TransactionalTestEnvironment {
+public class CartFacadeTest extends TestContainerEnvironment {
 
     @Autowired
     CartFacade cartFacade;

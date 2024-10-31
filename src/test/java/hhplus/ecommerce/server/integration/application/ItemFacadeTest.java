@@ -7,11 +7,11 @@ import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
-import hhplus.ecommerce.server.infrastructure.item.ItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.item.ItemStockJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.order.OrderJpaRepository;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class ItemFacadeTest extends TransactionalTestEnvironment {
+public class ItemFacadeTest extends TestContainerEnvironment {
 
     @Autowired
     ItemFacade itemFacade;

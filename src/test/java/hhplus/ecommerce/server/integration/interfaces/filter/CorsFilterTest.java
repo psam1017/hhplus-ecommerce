@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.integration.interfaces.filter;
 
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class CorsFilterTest extends TransactionalTestEnvironment {
+public class CorsFilterTest extends TestContainerEnvironment {
 
     @Autowired
     protected MockMvc mockMvc;

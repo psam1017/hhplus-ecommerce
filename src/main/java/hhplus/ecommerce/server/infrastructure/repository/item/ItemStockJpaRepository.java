@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.item;
+package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import jakarta.persistence.LockModeType;
@@ -27,7 +27,7 @@ public interface ItemStockJpaRepository extends JpaRepository<ItemStock, Long> {
     @Query("""
             select i
             from ItemStock i
-            where i.item.id = :itemId
+            where i.id = :id
             """)
-    Optional<ItemStock> findByItemIdWithLock(Long itemId);
+    Optional<ItemStock> findByIdWithLock(Long id);
 }

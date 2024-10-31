@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.point;
+package hhplus.ecommerce.server.infrastructure.repository.point;
 
 import hhplus.ecommerce.server.domain.point.Point;
 import jakarta.persistence.LockModeType;

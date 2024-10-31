@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.cart;
+package hhplus.ecommerce.server.infrastructure.repository.cart;
 
 import hhplus.ecommerce.server.domain.cart.Cart;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,5 +12,5 @@ public interface CartJpaRepository extends JpaRepository<Cart, Long> {
 
     List<Cart> findAllByUserId(Long userId);
 
-    void deleteByUserIdAndItemIdIn(Long userId, Set<Long> itemIds);
+    void deleteAllByUserIdAndItemIdIn(Long userId, Set<Long> itemIds);
 }

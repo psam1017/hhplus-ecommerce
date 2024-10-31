@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.order;
+package hhplus.ecommerce.server.infrastructure.repository.order;
 
 import hhplus.ecommerce.server.domain.order.Order;
 import org.springframework.data.jpa.repository.JpaRepository;

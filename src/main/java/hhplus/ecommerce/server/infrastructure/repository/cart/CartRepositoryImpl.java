@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.cart;
+package hhplus.ecommerce.server.infrastructure.repository.cart;
 
 import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.cart.service.CartRepository;
@@ -39,6 +39,6 @@ public class CartRepositoryImpl implements CartRepository {
 
     @Override
     public void deleteByUserIdAndItemIds(Long userId, Set<Long> itemIds) {
-        cartJpaRepository.deleteByUserIdAndItemIdIn(userId, itemIds);
+        cartJpaRepository.deleteAllByUserIdAndItemIdIn(userId, itemIds);
     }
 }

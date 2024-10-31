@@ -1,14 +1,14 @@
 package hhplus.ecommerce.server.integration.infrastructure;
 
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JwtUtilsTest extends TransactionalTestEnvironment {
+public class JwtUtilsTest extends TestContainerEnvironment {
 
     @Autowired
     JwtUtils jwtUtils;

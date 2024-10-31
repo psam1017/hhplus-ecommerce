@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.integration.interfaces.controller.order;
 
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import hhplus.ecommerce.server.interfaces.controller.order.OrderDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SuppressWarnings("DataFlowIssue")
-public class OrderDtoTest extends TransactionalTestEnvironment {
+public class OrderDtoTest extends TestContainerEnvironment {
 
     @Autowired
     Validator validator;

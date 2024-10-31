@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.item;
+package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.service.ItemStockRepository;
@@ -28,7 +28,7 @@ public class ItemStockRepositoryImpl implements ItemStockRepository {
     }
 
     @Override
-    public Optional<ItemStock> findByItemIdWithLock(Long itemId) {
-        return itemStockJpaRepository.findByItemIdWithLock(itemId);
+    public Optional<ItemStock> findByIdWithLock(Long id) {
+        return itemStockJpaRepository.findByIdWithLock(id);
     }
 }

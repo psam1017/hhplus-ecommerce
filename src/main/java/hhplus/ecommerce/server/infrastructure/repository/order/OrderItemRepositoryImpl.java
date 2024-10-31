@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.order;
+package hhplus.ecommerce.server.infrastructure.repository.order;
 
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
@@ -36,5 +36,10 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
                         result -> (Long) result[0],
                         result -> ((Number) result[1]).intValue()
                 ));
+    }
+
+    @Override
+    public void deleteAll(List<OrderItem> orderItems) {
+        orderItemJpaRepository.deleteAll(orderItems);
     }
 }

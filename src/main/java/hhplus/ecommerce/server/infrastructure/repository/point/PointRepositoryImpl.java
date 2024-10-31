@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.point;
+package hhplus.ecommerce.server.infrastructure.repository.point;
 
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointRepository;
@@ -18,5 +18,10 @@ public class PointRepositoryImpl implements PointRepository {
     @Override
     public Optional<Point> findByUserId(Long userId) {
         return pointJpaRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Optional<Point> findById(Long pointId) {
+        return pointJpaRepository.findById(pointId);
     }
 }

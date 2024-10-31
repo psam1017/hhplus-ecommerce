@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.order;
+package hhplus.ecommerce.server.infrastructure.repository.order;
 
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.service.OrderRepository;
@@ -29,5 +29,10 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findByIdAndUserId(Long orderId, Long userId) {
         return orderJpaRepository.findByIdAndUserId(orderId, userId);
+    }
+
+    @Override
+    public void deleteById(Long orderId) {
+        orderJpaRepository.deleteById(orderId);
     }
 }

@@ -1,0 +1,42 @@
+services:
+  application:
+    container_name: hhplus-ecommerce
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mysql:
+    container_name: mysql
+    image: mysql:8.0.36
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_DATABASE: ecommerce
+      MYSQL_ROOT_PASSWORD: password
+    healthcheck:
+      test: "mysqladmin ping"
+      start_period: 5s
+      interval: 3s
+      retries: 10
+
+  redis:
+    container_name: redis
+    image: redis:7.4.1-alpine
+    ports:
+      - 6379:6379
+    environment:
+      TZ: Asia/Seoul
+    healthcheck:
+      test: "redis-cli ping"
+      interval: 3s
+      retries: 10

@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.user;
+package hhplus.ecommerce.server.infrastructure.repository.user;
 
 import hhplus.ecommerce.server.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

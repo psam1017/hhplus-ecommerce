@@ -2,7 +2,7 @@ package hhplus.ecommerce.server.integration.interfaces.interceptor;
 
 import hhplus.ecommerce.server.infrastructure.jwt.JwtUtils;
 import hhplus.ecommerce.server.infrastructure.security.UserIdHolder;
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +16,7 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.mockStatic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-public class UserIdInterceptorTest extends TransactionalTestEnvironment {
+public class UserIdInterceptorTest extends TestContainerEnvironment {
 
     private static MockedStatic<UserIdHolder> mockedStatic;
 

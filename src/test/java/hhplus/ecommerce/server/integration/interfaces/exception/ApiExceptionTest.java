@@ -1,6 +1,6 @@
 package hhplus.ecommerce.server.integration.interfaces.exception;
 
-import hhplus.ecommerce.server.integration.TransactionalTestEnvironment;
+import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import hhplus.ecommerce.server.interfaces.exception.ApiException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ApiExceptionTest extends TransactionalTestEnvironment {
+public class ApiExceptionTest extends TestContainerEnvironment {
 
     private final String basePackagePath = "hhplus.ecommerce.server";
 
