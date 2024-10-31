@@ -120,25 +120,23 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
     void createOrder_preventDeadLock() throws InterruptedException {
         // given
         int stockAmount = 10;
-        int doubleStockAmount = 20;
+        int tryCount = 10;
 
         Item itemA = createItem("itemA", 1000);
         createItemStock(stockAmount, itemA);
         Item itemB = createItem("itemB", 1000);
         createItemStock(stockAmount, itemB);
-        Item itemC = createItem("itemC", 1000);
-        createItemStock(doubleStockAmount, itemC);
 
         List<User> users = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < tryCount; i++) {
             User user = createUser("testUser" + i);
             createPoint(2000, user);
             users.add(user);
         }
 
-        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        ExecutorService executorService = Executors.newFixedThreadPool(tryCount);
         CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch endLatch = new CountDownLatch(20);
+        CountDownLatch endLatch = new CountDownLatch(tryCount);
 
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
@@ -155,15 +153,15 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
                                 user.getId(),
                                 List.of(
                                         new OrderCommand.CreateOrderItem(itemA.getId(), 1),
-                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1)
+                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1)
                                 )
                         );
                     } else {
                         command = new OrderCommand.CreateOrder(
                                 user.getId(),
                                 List.of(
-                                        new OrderCommand.CreateOrderItem(itemC.getId(), 1),
-                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1)
+                                        new OrderCommand.CreateOrderItem(itemB.getId(), 1),
+                                        new OrderCommand.CreateOrderItem(itemA.getId(), 1)
                                 )
                         );
                     }
@@ -185,13 +183,13 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
         endLatch.await();
 
         // then
-        assertThat(successCount.get()).isEqualTo(doubleStockAmount);
+        assertThat(successCount.get()).isEqualTo(tryCount);
         assertThat(failCount.get()).isEqualTo(0);
         List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
         assertThat(itemStocks)
-                .hasSize(3)
+                .hasSize(2)
                 .extracting(ItemStock::getAmount)
-                .containsExactly(0, 0, 0);
+                .containsExactly(0, 0);
     }
 
     private User createUser(String username) {
