@@ -6,6 +6,7 @@
 - [동시성 제어를 위한 락](#동시성-제어를-위한-락)
 - [데드락](#데드락)
 - [동시성 제어 방식](#동시성-제어-방식)
+- [트러블 슈팅](#트러블-슈팅)
 
 ---
 
@@ -44,7 +45,7 @@
 
 - 이커머스 시나리오 프로젝트에서도 동시성 이슈가 발생할 수 있는 솽황이 3가지 있습니다.
 
-### 포인트 충전을 위해 포인트 레코드에 접근
+### 포인트 충전을 위해 포인트 레코드에 접근 - 낙관적 락 사용
 
 포인트를 충전하는 상황에서 여러 번의 결제를 수행하더라도 1번만 포인트가 충전되는 문제 상황이 생길 수 있습니다.
 
@@ -52,7 +53,47 @@
 - A' : 현재 포인트(100) + 100 -> 200 으로 업데이트
 - A'' : 현재 포인트(100) + 100 -> 200 으로 업데이트
 
-### 주문/결제 시 - 포인트 감소를 위해 포인트 레코드에 접근
+
+원래는 트랜잭션 안에서 PG 사 결제 승인을 요청하는 등의 상황을 생각해서 비관적 락이 더 적합하지 않을까 생각했는데, 팀원분들과 토론, 그리고 코치님의 피드백을 통해서 낙관적 락과 PG 사 요청을 같이 하는 게 더 좋다는 결론으로 바뀌었습니다.
+<br>
+토론 당시 제가 생각한 비관적 락의 근거입니다.
+```
+...
+저는 포인트 충전이 현실상황에서는 어떻게 될까를 좀 고려해본 것 같아요
+코드에서는 빠져 있지만 실제 포인트 충전을 한다는 것은 사용자의 카드나 현금을 결제한다는 것이고, 그 경우 PG 사에 해당 정보로 승인 요청을 보낼 수 있는 상황까지 오리라고 생각했습니다. 그러면 낙관적 락을 사용하고 100 번 요청을 동시에 받았을 때 PG 사에 100 번 요청이 날아가고, DB 는 한 번만 업데이트하게 되니 문제가 생기지 않을까 했어요.
+토스 같은 PG 사는 멱등키를 사용해서 동시성 제어를 하는 방법도 마련해뒀지만, 좀 오래된 PG 사는 멱등키가 없는 경우도 있다고 알아서, 이러한 경우에 대비하여 검증하려는 의도가 있습니다. 한 마디로 PG 사 요청을 한 번만 하기 위해서에요.
+비관적 락으로 한 레코드에 대한 접근을 한 번씩만 하게 제어하고, 트랜잭션 진입 후 결제키와 결제상태를 체크하면 PG 사에 요청을 보내기 전에 결제완료된 레코드임을 확인하고 예외를 던져 PG 사 요청을 막을 수 있을 것 같습니다.
+근데 이러한 가정이 없다면 낙관적 락이 맞다는 생각이 드네요.
+...
+```
+
+아래는 항해플러스 코치님의 멘토링 내용 일부입니다.
+```
+PG 와 같이 외부 의존성이 껴있는 경우, 낙관적 락을 활용해 구현한다면, 트랜잭션이 정상적으로 처리되었을 때만 PG 사에 요청을 보내는 방식을 활용해볼 수도 있을 것 같습니다. 예를 들면 아래와 같겠죠.
+tx {
+  잔액 조회
+  잔액 차감
+  ..
+  결제 생성
+}
+PG 전송
+
+다만 여기서 주의해야할 점은, 말씀해주신 것처럼 앞 단에서 트랜잭션 범위 내에서 결제가 정상적으로 생성된 경우만 "결제 시도" 에 성공한 것으로 간주해야하므로 이런 부분을 주의해서 구현해야 합니다.
+오히려 이 경우는 결제와 예약에 영향을 줄 수 있는 시도가 동시에 발생할 수 있는 만큼 아래와 같이 각 자원에 대해 락을 적절히 설정하므로서 이점을 얻을 수 있을지? 등에 대해서 고려해보고, PG 전송에 대한 실패가 발생했을 때 재시도 전략 등을 세워 촘촘하게 비즈니스 컨트롤을 해볼 수 있을 것 같아요.
+tx {
+  예약 조회 + 검증 // 비관락 사용
+  잔액 조회 + 차감 및 검증 // 낙관락 사용
+  ..
+  결제 생성
+}
+PG 전송
+```
+
+`트랜잭션(낙관적 락) -> 트랜잭션 종료 -> PG 전송 -> PG 검증하여 재시도, 보상 트랜잭션, 성공 등을 처리`하는 흐름으로 로직을 구성하면 됩니다.
+<br>
+비즈니스 로직 동안에는 '모든 로직'에서 트랜잭션이 보장되어야 하니까 PG 사 승인 요청도 트랜잭션 안에 있어야 한다, 라는 착각에 비관적 락을 사용했던 것입니다. 이번 프로젝트 통해 가장 크게 배운 것은 (분산락 사용도 있긴 하지만) **트랜잭션 범위를 적절하게 사용해야 한다**는 교훈 같습니다. 
+
+### 주문/결제 시 - 포인트 감소를 위해 포인트 레코드에 접근 - 낙관적 락 사용
 
 포인트를 사용하여 주문을 하는 상황에서 여러 번 주문을 했음에도 1번만 포인트가 사용되는 문제 상황이 생길 수 있습니다.
 
@@ -60,13 +101,21 @@
 - B' : 현재 포인트(1000) - 100 -> 900 으로 업데이트
 - B'' : 현재 포인트(1000) - 100 -> 900 으로 업데이트
 
-### 주문/결제 시 - 재고 차감을 위해 재고 레코드에 접근
+이 상황도 위와 마찬가지입니다. 사실 위의 코치님 피드백이 더 잘 설명되어 있지만, 포인트 감소 자체는 낙관적 락으로 하되, 같은 논리적 트랜잭션 안에서 재고 차감 등의 로직에는 비관적 락을 사용하면 전체 로직의 동시성 문제를 제어하면서 비관적 락의 단점인 대기시간도 줄일 수 있습니다.
+
+### 주문/결제 시 - 재고 차감을 위해 재고 레코드에 접근 - 비관적 락 사용
 
 1개 밖에 남지 않은 상품을 주문할 때 여러 번의 주문 모두가 구매에 성공하는 문제 상황이 생길 수 있습니다.
 
 - C : 현재 재고수량(1) - 1 -> 0 으로 업데이트 && 주문 성공
 - C' : 현재 재고수량(1) - 1 -> 0 으로 업데이트 && 주문 성공
 - C'' : 현재 재고수량(1) - 1 -> 0 으로 업데이트 && 주문 성공
+
+재고의 경우 상황이 좀 달라질 수 있습니다. 여러 건의 요청이 필요한 만큼 성공하기 위해서는 비관적 락이 더 효율적입니다.
+<br>
+예를 들어 100번의 총 10번의 재고 차감이 성공해야 하는 상황에서 낙관적 락을 적용하면 첫 시도에서는 1건 성공 99건 실패, 그 다음에는 1건 성공 98건 실패, 이런 식으로 처리하게 되어 10번 성공을 위해 955번의 요청 또는 재시도를 해야 합니다.
+<br>
+반면에 비관적 락을 사용하면 대기시간이 존재한다는 단점은 있지만, 타임아웃 이내에 100번의 요청 중 10번만 성공시키면 되기 때문에 더 적합하다고 볼 수 있습니다.
 
 </details>
 
@@ -151,12 +200,13 @@
 1. 상호배제 부정
     - 여러 트랜잭션이 동시에 자원에 접근하는 것을 허용하고, 충돌이 발생하는 경우 예외를 발생시키는 낙관적 락 방법이 있습니다.
     - 상품 재고는 여러 트랜잭션이 동시에 접근하고 충돌이 잦을 수 있기에 부적절하다고 판단했습니다.
-    - 마찬가지로 포인트 충전, 포인트 감소 상황 역시 동시에 요청이 발생하는 경우 각각을 성공시키기 위해서 낙관적 락은 적합하지 않다고 판단했습니다.
+    - 반면 포인트 충전을 여러 건의 요청 중에서도 한 건만 성공하면 되는 시나리오라고 생각하면 낙관적 락이 적합할 수 있습니다.
 2. 점유 및 대기 부정
     - 필요로 하는 모든 자원을 한번에 획득하게 하면 가능합니다.
     - 처음에는 벌크 조회 쿼리에 락을 걸면 가능하리라 생각했지만, 현재 사용 중인 MySQL 에서는 정말로 그런지 찾아보니 공식문서에서는 "레코드를 조우한 순간"에 락을 건다고 합니다. 즉, 여러 건을 쿼리를 실행해도 내부적으로는 하나씩 레코드를 찾고 의도한 방식으로 락을 걸기에 불완전한 방법이라고 판단했습니다.
     - > InnoDB performs row-level locking in such a way that when it searches or scans a table index, it sets shared or exclusive locks on the index records it encounters. Thus, the row-level locks are actually index-record locks.
       <br> [MySQL - 17.7.1 InnoDB Locking](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html#innodb-next-key-locks)
+    - DB 락을 사용하는 상황에서는 아쉽지만, 분산락을 사용할 때 커넥션&분산락 데드락을 해소하기 위해 사용할 수 있습니다. 이는 아래 [커넥션과 분산락 데드락](#커넥션과-분산락-데드락)에 자세히 기록해두었습니다.
 3. 비선점 부정
     - 자원의 선점을 허용하게 하면 가능합니다.
     - 하지만 트랜잭션 중간에 자원을 선점하게 되면 락을 거는 이유가 없어지기 때문에 최후의 수단으로 타임아웃을 설정하여 일정 시간 후 선점을 허용하도록 해야 합니다. 그러면 데드락이 지속되지 않고, 한 트랜잭션에서 롤백되고 락을 해제하면서 다른 트랜잭션에서 레코드를 선점할 수 있게 됩니다.
@@ -411,5 +461,207 @@ Redis 는 RedLock 이라고 하는 분산락을 제공합니다.
 Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 존재합니다. 구현 난이도도 낮은 편이며 조사했을 때 체감상 가장 많은 레퍼런스와 블로그 포스트가 존재했습니다. 이는 그만큼 사용자 층도 두텁다는 뜻이리라 생각합니다.
 
 하지만 RedLock 에는 알고리즘적 한계가 있기 때문에 이후 시간적 여유가 허락된다면 Kafka 의 도입도 시도해보고자 합니다.
+
+</details>
+
+## 트러블 슈팅
+
+<details>
+  <summary>트러블 슈팅</summary>
+
+- 이 내용은 분산락을 적용하는 과정에서 겪은 문제를 정리한 내용입니다. 분산락 적용은 STEP12 브랜치에 적용되어 있기에 자세한 코드 확인이 필요하신 분은 [STEP12 브랜치](https://github.com/psam1017/hhplus-ecommerce/tree/STEP12)를 참고해주세요.
+
+### 커넥션과 분산락 데드락
+
+#### 문제 현상
+
+포인트 충전 및 사용하는 로직에서 분산락을 적용하고 '10건'의 동시 충전 요청을 하는 통합테스트를 작성해본 결과 타임아웃 예외가 발생했습니다.
+
+![trouble-shoot-1](https://github.com/user-attachments/assets/0016387a-13b6-4972-b4e3-23e55b517f9b)
+
+#### 원인 분석
+
+로그를 추적해본 결과 DB 데이터와 관련된 분산락을 획득하는 과정 자체는 문제가 없는데, 커넥션이 부족한 상황에서 새로운 커넥션을 요구하기에 데드락이 발생한 것입니다.
+
+![trouble-shoot-2](https://github.com/user-attachments/assets/04a65950-4dfa-427a-89cf-c2c11180bded)
+
+혹시나 해서 커넥션 개수를 기본 '10개' 에서 '20개'로 바꿔보니 통과하는 것을 확인했습니다. 커넥션 부족이 발생한 이유는 분산락을 획득하는 과정에서 트랜잭션 전파 속성을 REQUIRES_NEW 로 설정했었는데, 10건의 요청이 각자 10개의 커넥션을 하나씩 획득한 상태에서 새로운 커넥션을 요구했기 때문입니다.
+
+트랜잭션 전파 속성으로 REQUIRES_NEW 로 설정해야 하는 이유는 락의 일관성 보장을 위한 것입니다.
+
+![lock-after-tx](https://github.com/user-attachments/assets/a6978dd1-2f62-47a4-992d-3685d7a7d2ed)
+
+그림에서 보이는 것과 같이 락을 획득하기 전에 트랜잭션이 시작되면 같은 상태(시점)의 레코드를 조회하고 이를 변경하기 때문에 동시성 이슈가 발생할 수 있습니다.
+
+![lock-before-tx](https://github.com/user-attachments/assets/50c1dcf6-2e14-4b09-aab6-30d42773a36c)
+
+이를 막기 위해서는 락을 획득한 이후 새로운 트랜잭션을 시작하고 이를 커밋(롤백)한 다음 락을 해제해야 하기 때문에 이를 위한 안전장치로써 트랜잭션 전파 속성을 REQUIRES_NEW 로 설정했습니다.
+
+#### 문제 해결
+
+![trouble-shoot-3](https://github.com/user-attachments/assets/933fbdab-b023-456a-90b7-f907c820ceec)
+
+```
+서비스 tx {
+    락 획득{
+        메서드 tx {
+            // 로직 실행
+        }
+    }
+}
+```
+
+저의 이전 코드는 위와 같았습니다. 서비스 클래스 위에 @Transactional 이 적용되어 있습니다. 즉 모든 메서드가 커넥션을 획득하게 됩니다. 그리고 usePoint 메서드는 호출되면 새로운 트랜잭션을 시작하여 커넥션을 획득하려고 합니다.
+
+한 스레드가 서비스 로직에 진입하고 메서드를 호출할 때 AOP 로 새로운 커넥션을 획득하려는 상황에서 다른 스레드에서 서비스 로직에 진입하여 이미 커넥션을 확보했다면, 결과적으로 락을 획득하지 못한 스레드는 락 해제를 기다리고, 락을 획득한 스레드는 커넥션을 기다리는 교착상태가 발생하게 됩니다.
+
+![trouble-shoot-4](https://github.com/user-attachments/assets/950ed4a1-69c2-484b-bb97-263e5e193097)
+
+```
+서비스 {
+    락 획득 {
+        메서드 tx {
+            // 로직 실행
+        }
+    }
+}
+```
+
+위의 테스트에서 했던 것처럼 커넥션을 늘릴 수도 있겠지만, 하나의 로직에서 얼마나 많은 커넥션을 요청하게 될 지 예측할 수 없는 상황에서 이 방법은 현실적이지 못 합니다.
+
+저는 서비스 클래스에 적용되었던 @Transactional 을 문제를 해결했습니다. 이는 데드락 해소 기법 중에서도 점유 및 대기 부정 사례에 해당합니다. 로직 수행 전에 필요한 자원을 모두 확보할 수 있도록 필요로 하는 자원인 DB 커넥션 개수를 최적화함으로써 데드락을 예방했기 때문입니다.
+
+### 보상 트랜잭션
+
+#### 문제 현상
+
+이제 과제를 끝낼 수 있겠다! 하는 희망과 함께 주문 분산락을 적용하력 했는데, 트랜잭션 최소화에 의한 문제가 바로 생겼습니다.
+
+하나의 논리적 트랜잭션 안에서, 분산락 사용을 위해 (propagation = REQUIRES_NEW 속성으로 획득한)새로운 트랜잭션이 커밋되고 나면, 익셉션 발생에 의한 자동 롤백이 되지 않는다는 것입니다.
+
+이전까지는 @Service 와 @Transactional 을 무조건 함께 사용했었는데, 하나의 논리적 트랜잭션 안에서 퍼사드 패턴으로 여러 서비스를 각각의 물리적 트랜잭션을 가지게 하면서 호출하니, 해당 트랜잭션들이 커밋된 이후 발생하고 나면 이를 롤백할 방법을 못 찾은 것입니다.
+
+#### 원인 분석
+
+```
+결제 시작 {
+    tx1 : 재고 차감();
+    tx2 : 포인트 차감();
+    tx3 : 주문 생성();
+    !예외 발생!
+}
+```
+
+언급한 대로 각각의 로직들은 트랜잭션이 종료됨과 동시에 커밋을 하기 때문에 예외가 생겨도 롤백이 되지 않습니다.
+
+#### 문제 해결
+
+멘탈이 흔들리던 상황에서 문득 코치님이 멘토링 시간에 '보상 트랜잭션'이라는 언급을 했던 게 기억이 났습니다. 제가 분산락 적용하다가 새로운 트랜잭션이 커밋하면 어떻게 롤백하냐, 라는 질문을 하다가 들은 답변이었는데 그때는 보상 트랜잭션이 그냥 코치님 개인만의 표현 같은 건줄 알았습니다.
+
+혹시나 해서 검색해보니 보상 트랜잭션이라는 개념과 패턴이 존재한다는 것을 깨달았습니다. 보상 트랜잭션은 일련의 작업 중 일부가 실패했을 때, 이전 작업들을 복구시키기 위해 수행되는 트랜잭션입니다.
+
+분산락을 적용하는 여러 블로그 포스트들이 대부분 저와 같은 상황을 겪고 있었기에 해결방법을 찾기도 용이했습니다.
+
+```
+public Long createOrder(OrderCommand.CreateOrder command) {
+
+    Deque<Runnable> compensationActions = new ArrayDeque<>();
+
+    try {
+        return processOrder(command, compensationActions);
+    } catch (Exception e) {
+        while (!compensationActions.isEmpty()) {
+            try {
+                compensationActions.pop().run();
+            } catch (Exception e2) {
+                // 로그 기록, 추가 보상 작업, 알림 전송, 모니터링 시스템 연동 등
+                log.error("compensation action failed", e2);
+            }
+        }
+        throw e;
+    }
+}
+
+private Long processOrder(OrderCommand.CreateOrder command, Deque<Runnable> compensationActions) {
+    Set<Long> itemIds = command.toItemIds();
+    Map<Long, Integer> itemIdStockAmountMap = command.toItemMap();
+    User user = userService.getUser(command.userId());
+    List<Item> items = itemService.findItems(itemIds);
+
+    for (Long itemId : itemIdStockAmountMap.keySet()) {
+        ItemStock itemStock = itemService.getItemStockByItemId(itemId);
+        itemService.deductStock(itemStock.getId(), itemIdStockAmountMap.get(itemId));
+        compensationActions.push(() -> itemService.restoreStock(itemStock.getId(), itemIdStockAmountMap.get(itemId)));
+    }
+
+    Point point = pointService.getPointByUserId(command.userId());
+    int usedPoint = pointService.usePoint(point.getId(), items, itemIdStockAmountMap);
+    compensationActions.push(() -> pointService.chargePoint(point.getId(), usedPoint));
+
+    Order order = orderService.createOrderAndItems(command, user, items);
+    compensationActions.push(() -> orderService.cancelOrder(order.getId()));
+
+    cartService.deleteCartItems(command.userId(), itemIds);
+
+    orderDataPlatform.saveOrderData(itemIdStockAmountMap);
+
+    return order.getId();
+}
+```
+
+위에서 보이는 것과 같이 compensationActions 라는 데크를 생성합니다.
+  - 참고로 Deque 는 스택처럼 사용하려는 의도인데, Stack 객체를 사용하지 않는 이유는, Stack 의 메서드들이 synchronized 를 사용해서 성능 저하 우려가 있기 때문입니다.
+
+기존 코드에는 성공 로직 밖에 없었으나, 이 코드에서는 실패 시 이를 복구하는 로직이 필요한 데마다 보상 트랜잭션 메서드를 compensationActions 에 담습니다.
+
+이후 정말로 예외가 발생하는 경우 이 메서드들이 실행하여 논리적 트랜잭션의 종료 전에 데이터들을 복구합니다.
+
+한 가지 아쉬운 점은, 제가 구현한 코드는 보상 트랜잭션에서 발생한 실패에 대한 핸들링이 부족하다는 것입니다. 따라서 로깅, 추가로직 구현, 알림 전송, 모니터링 시스템 구현 등의 방법으로 보상 트랜잭션의 실패에 대응할 체계를 구축할 필요가 있습니다.
+
+```
+@DisplayName("주문 생성 이후에 로직이 실패하면 트랜잭션 보상 로직으로 주문을 취소하고 포인트와 재고를 복원시킬 수 있다.")
+@Test
+void createOrder_withFailure() {
+    // mock
+    willThrow(new RuntimeException())
+            .given(orderDataPlatform).saveOrderData(Mockito.anyMap());
+
+    // given
+    User user = createUser("testUser");
+    Point point = createPoint(50000, user);
+    Item item1 = createItem("item1", 1000);
+    createItemStock(10, item1);
+    Item item2 = createItem("item2", 2000);
+    createItemStock(20, item2);
+
+    OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
+            user.getId(),
+            List.of(
+                    new OrderCommand.CreateOrderItem(item1.getId(), 10),
+                    new OrderCommand.CreateOrderItem(item2.getId(), 20)
+            ));
+
+    // when
+    // then
+    assertThatThrownBy(() -> orderFacade.createOrder(command))
+            .isInstanceOf(RuntimeException.class);
+
+    assertThat(orderJpaRepository.findAll()).isEmpty();
+    assertThat(orderItemJpaRepository.findAll()).isEmpty();
+
+    point = pointJpaRepository.findById(point.getId()).orElseThrow();
+    assertThat(point.getAmount()).isEqualTo(50000);
+
+    List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
+    assertThat(itemStocks).hasSize(2)
+            .extracting(is -> tuple(is.getId(), is.getAmount()))
+            .containsExactlyInAnyOrder(
+                    tuple(item1.getId(), 10),
+                    tuple(item2.getId(), 20)
+            );
+}
+```
+
+보상 트랜잭션 로직은 TDD 로 구현하고, 이후 OrderFacade#createOrder 로직 수행 중에 발생하는 예외에 데이터들이 복구가 되는지를 확인하는 테스트 코드를 작성하여 보상 트랜잭션의 동작을 검증할 수 있었습니다.
 
 </details>
