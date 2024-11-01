@@ -110,7 +110,7 @@ public class LockComparisionTest extends TestContainerEnvironment {
         assertThat(optimisticLockDuration).isLessThan(distributionLockDuration);
     }
 
-    @DisplayName("동시 요청 횟수가 적을 때 락의 처리속도는 '낙관적 락 < 비관적 락 < 분산락' 으로 측정된다.")
+    @DisplayName("동시 요청 횟수가 많을 때 락의 처리속도는 '낙관적 락 < 비관적 락 < 분산락' 으로 측정된다.")
     @Test
     void compareLock() throws InterruptedException {
         // given
