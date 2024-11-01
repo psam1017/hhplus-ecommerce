@@ -10,22 +10,34 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
-@Transactional
 @Component
 public class PointFinderWithLock {
 
     @Autowired
     EntityManager em;
 
+    @Transactional
     public void findWithOptimisticLock(Long pointId, long millis) {
         em.find(Point.class, pointId, LockModeType.OPTIMISTIC);
         sleep(millis);
     }
 
+    @Transactional
+    public void findWithOptimisticLock(Long pointId) {
+        em.find(Point.class, pointId, LockModeType.OPTIMISTIC);
+    }
+
+    @Transactional
     public void findWithPessimisticLock(Long pointId, long millis) {
         Map<String, Object> properties = Map.of("jakarta.persistence.lock.timeout", 500);
         em.find(Point.class, pointId, LockModeType.PESSIMISTIC_WRITE, properties);
         sleep(millis);
+    }
+
+    @Transactional
+    public void findWithPessimisticLock(Long pointId) {
+        Map<String, Object> properties = Map.of("jakarta.persistence.lock.timeout", 500);
+        em.find(Point.class, pointId, LockModeType.PESSIMISTIC_WRITE, properties);
     }
 
     @DistributedLock(key = "'points:' + #pointId")
@@ -33,6 +45,12 @@ public class PointFinderWithLock {
         Map<String, Object> properties = Map.of("jakarta.persistence.lock.timeout", 500);
         em.find(Point.class, pointId, LockModeType.PESSIMISTIC_WRITE, properties);
         sleep(millis);
+    }
+
+    @DistributedLock(key = "'points:' + #pointId")
+    public void findWithDistributionLock(Long pointId) {
+        Map<String, Object> properties = Map.of("jakarta.persistence.lock.timeout", 500);
+        em.find(Point.class, pointId, LockModeType.PESSIMISTIC_WRITE, properties);
     }
 
     private void sleep(long millis) {
