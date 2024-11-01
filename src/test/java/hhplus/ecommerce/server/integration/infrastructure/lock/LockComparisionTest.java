@@ -193,7 +193,6 @@ public class LockComparisionTest extends TestContainerEnvironment {
 
         // then
         assertThat(optimisticLockDuration).isLessThan(pessimisticLockDuration);
-        assertThat(optimisticLockDuration).isLessThan(distributionLockDuration);
         assertThat(pessimisticLockDuration).isLessThan(distributionLockDuration);
     }
 
