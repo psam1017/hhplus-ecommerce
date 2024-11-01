@@ -485,10 +485,9 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
 한편 카프카는 구현 난이도가 높아 이번에는 성능 비교 테스트를 생략했습니다.
 
 ```
-
-    @DisplayName("낙관적 락, 비관적 락, 분산락 사이의 시간 차이를 명확하게 비교할 수 있다.")
+    @DisplayName("동시 요청 횟수가 적을 때 락의 처리속도는 '낙관적 락 < 비관적 락 ~= 분산락' 으로 측정된다.")
     @Test
-    void compareLock() throws InterruptedException {
+    void compareLockWithFewRequest() throws InterruptedException {
         // given
         int tryCount = 5;
         long millis = 100;
@@ -503,7 +502,7 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
             executorService.execute(() -> {
                 try {
                     startLatch1.await();
-                    userFinder.findWithOptimisticLock(point.getId(), millis);
+                    pointFinder.findWithOptimisticLock(point.getId(), millis);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -525,7 +524,7 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
             executorService.execute(() -> {
                 try {
                     startLatch2.await();
-                    userFinder.findWithPessimisticLock(point.getId(), millis);
+                    pointFinder.findWithPessimisticLock(point.getId(), millis);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -547,7 +546,7 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
             executorService.execute(() -> {
                 try {
                     startLatch3.await();
-                    userFinder.findWithDistributionLock(point.getId(), millis);
+                    pointFinder.findWithDistributionLock(point.getId(), millis);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -562,11 +561,9 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
         long distributionLockDuration = System.currentTimeMillis() - startMillis;
 
         // then
-        assertThat(optimisticLockDuration).isLessThan(pessimisticLockDuration); // (1)
-        assertThat(optimisticLockDuration).isLessThan(distributionLockDuration); // (2)
-        assertThat(pessimisticLockDuration).isLessThanOrEqualTo(distributionLockDuration); // (3)
+        assertThat(optimisticLockDuration).isLessThan(pessimisticLockDuration);
+        assertThat(optimisticLockDuration).isLessThan(distributionLockDuration);
     }
-
 ```
 
 테스트 의도는 다음과 같습니다.
@@ -589,11 +586,106 @@ Java 에는 RedLock 클라이언트로서 Redisson 이라는 라이브러리가 
   - 분산락(비관적 락) 테스트 결과, 기대했던 것과 달리 여전히 100번에 1번 정도는 분산락이 더 빠르게 시간이 측정되었습니다. 비록 분산락 내부 트랜잭션에서도 비관적 락을 사용했음에도 불구하고 말이죠.
   ![lock-comparision-2](https://github.com/user-attachments/assets/9c0a7f44-015c-424d-b3c0-a61efb0d4ae9)
 
-비관적 락과 분산락 비교를 위해 스레드 개수를 훨씬 크게 잡으면 또 다르게 동작할 가능성도 있지만, 만약 둘 사이에 정말로 확실한 성능 차이가 있다면 동시 요청 횟수가 적더라도 언제나 똑같은 결과를 내야 한다고 생각하고 스레드를 다소 작게 설정하고 반복 테스트로 검증하였습니다.
-
 그러한 가정 하에 두 방식의 조회 성능은, 적은 수의 동시 요청 하에서 가끔은 Java 의 System.currentTimeMillis() 의 오차보다 더 적게 차이가 날 정도로 미비하다는 결론을 도출했습니다.
 
-언급했던 것처럼 Redis 가 메모리 기반으로 동작하기 때문에 높은 성능의 락 제어를 제공한다는 사실을 테스트를 통해 확인할 수 있었습니다.
+그렇다면, 요청 수를 늘리게 되면 어떨까요? 사실 위 테스트 한 번으로 끝내려고 했는데, 영 찝찝한 마음에 다음 테스트도 추가해봤습니다.
+
+```
+    @DisplayName("동시 요청 횟수가 많을 때 락의 처리속도는 '낙관적 락 < 비관적 락 < 분산락' 으로 측정된다.")
+    @Test
+    void compareLock() throws InterruptedException {
+        // given
+        int tryCount = 200;
+        int repeatCount = 5;
+        Point point = createPoint();
+
+        // when 1 - 낙관적 락
+        ExecutorService executorService = Executors.newFixedThreadPool(tryCount);
+        CountDownLatch startLatch1 = new CountDownLatch(1);
+        CountDownLatch endLatch1 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch1.await();
+                    for (int j = 0; j < repeatCount; j++) {
+                        pointFinder.findWithOptimisticLock(point.getId());
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch1.countDown();
+                }
+            });
+        }
+
+        long startMillis = System.currentTimeMillis();
+        startLatch1.countDown();
+        endLatch1.await();
+        long optimisticLockDuration = System.currentTimeMillis() - startMillis;
+
+        // when 2 - 비관적 락
+        CountDownLatch startLatch2 = new CountDownLatch(1);
+        CountDownLatch endLatch2 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch2.await();
+                    for (int j = 0; j < repeatCount; j++) {
+                        pointFinder.findWithPessimisticLock(point.getId());
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch2.countDown();
+                }
+            });
+        }
+
+        startMillis = System.currentTimeMillis();
+        startLatch2.countDown();
+        endLatch2.await();
+        long pessimisticLockDuration = System.currentTimeMillis() - startMillis;
+
+        // when 3 - 분산락
+        CountDownLatch startLatch3 = new CountDownLatch(1);
+        CountDownLatch endLatch3 = new CountDownLatch(tryCount);
+
+        for (int i = 0; i < tryCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    startLatch3.await();
+                    for (int j = 0; j < repeatCount; j++) {
+                        pointFinder.findWithDistributionLock(point.getId());
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    endLatch3.countDown();
+                }
+            });
+        }
+
+        startMillis = System.currentTimeMillis();
+        startLatch3.countDown();
+        endLatch3.await();
+        long distributionLockDuration = System.currentTimeMillis() - startMillis;
+
+        // then
+        assertThat(optimisticLockDuration).isLessThan(pessimisticLockDuration);
+        assertThat(optimisticLockDuration).isLessThan(distributionLockDuration);
+        assertThat(pessimisticLockDuration).isLessThan(distributionLockDuration);
+    }
+```
+
+이번에는 1000번의 요청이 발생하는 경우에 대한 락의 성능을 측정해봤습니다. 스레드 개수는 톰캣 기본 스레드인 200개와 동일하게 맞췄고, 각 스레드가 5번씩 요청하게 하여 총 1,000번의 요청이 발생하도록 했습니다.
+
+![lock-comparision-3](https://github.com/user-attachments/assets/2575f0d9-33bc-4056-8bbc-e6ecc8b60d55)
+
+테스트 결과, 각 스레드 처리 시간의 총 합은 "낙관적 락 < 비관적 락 < 분산락" 처럼 나타났습니다.
+
+특히 낙관적 락, 비관적 락보다 분산락의 처리 시간이 비교적 크게 나타났습니다. 요청이 적을 때 모두 큰 차이가 없었으나, 요청이 많아지면 외부시스템인 레디스를 활용한 분산락이 분명하게 처리 시간이 더 오래 걸린다는 것을 확인할 수 있었습니다.
 
 </details>
 
