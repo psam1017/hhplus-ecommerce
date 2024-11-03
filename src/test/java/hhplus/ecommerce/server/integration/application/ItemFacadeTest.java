@@ -3,11 +3,12 @@ package hhplus.ecommerce.server.integration.application;
 import hhplus.ecommerce.server.application.ItemFacade;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
+import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
@@ -28,7 +29,7 @@ public class ItemFacadeTest extends TestContainerEnvironment {
     ItemFacade itemFacade;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
@@ -61,36 +62,45 @@ public class ItemFacadeTest extends TestContainerEnvironment {
         // then
         assertThat(result).hasSize(3)
                 .extracting(i -> tuple(i.id(), i.name(), i.price()))
-                .containsExactlyInAnyOrder(
+                .containsExactly(
                         tuple(item1.getId(), item1.getName(), item1.getPrice()),
                         tuple(item2.getId(), item2.getName(), item2.getPrice()),
                         tuple(item3.getId(), item3.getName(), item3.getPrice())
                 );
     }
 
-    @DisplayName("모든 상품을 조회할 수 있다.")
+    @DisplayName("상품을 페이징 조회할 수 있다.")
     @Test
     void findItems() {
         // given
         Item item1 = createItem("Test Item1", 1000);
         Item item2 = createItem("Test Item2", 2000);
+        Item item3 = createItem("Test Item3", 3000);
         ItemStock itemStock1 = createItemStock(10, item1);
         ItemStock itemStock2 = createItemStock(20, item2);
+        ItemStock itemStock3 = createItemStock(30, item3);
+
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, 2, "id", "desc", null);
 
         // when
-        List<ItemInfo.ItemDetail> result = itemFacade.findItems();
+        ItemInfo.ItemPageInfo pageInfo = itemFacade.pageItems(searchCond);
 
         // then
-        assertThat(result).hasSize(2)
+        List<ItemInfo.ItemDetail> details = pageInfo.itemDetails();
+        assertThat(details).hasSize(2)
                 .extracting(i -> tuple(i.id(), i.name(), i.price(), i.amount()))
-                .containsExactlyInAnyOrder(
-                        tuple(item1.getId(), item1.getName(), item1.getPrice(), itemStock1.getAmount()),
+                .containsExactly(
+                        tuple(item3.getId(), item3.getName(), item3.getPrice(), itemStock3.getAmount()),
                         tuple(item2.getId(), item2.getName(), item2.getPrice(), itemStock2.getAmount())
+                )
+                .doesNotContain(
+                        tuple(item1.getId(), item1.getName(), item1.getPrice(), itemStock1.getAmount())
                 );
+        assertThat(pageInfo.totalCount()).isEqualTo(3);
     }
 
     private Item createItem(String name, int price) {
-        return itemJpaRepository.save(Item.builder()
+        return itemJpaCommandRepository.save(Item.builder()
                 .name(name)
                 .price(price)
                 .build());

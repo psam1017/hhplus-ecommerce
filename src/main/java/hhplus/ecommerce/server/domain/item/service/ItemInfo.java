@@ -19,4 +19,13 @@ public class ItemInfo {
                     .toList();
         }
     }
+
+    public record ItemPageInfo(
+            List<ItemDetail> itemDetails,
+            long totalCount
+    ) {
+        public static ItemPageInfo from(List<ItemDetail> itemDetails, long totalCount) {
+            return new ItemPageInfo(itemDetails, totalCount);
+        }
+    }
 }

@@ -5,18 +5,16 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
-import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +42,7 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
     PointJpaRepository pointJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
@@ -206,7 +204,7 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
     }
 
     private Item createItem(String name, int price) {
-        return itemJpaRepository.save(Item.builder()
+        return itemJpaCommandRepository.save(Item.builder()
                 .name(name)
                 .price(price)
                 .build());

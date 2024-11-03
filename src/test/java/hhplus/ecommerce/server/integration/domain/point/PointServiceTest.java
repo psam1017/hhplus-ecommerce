@@ -6,7 +6,7 @@ import hhplus.ecommerce.server.domain.point.exception.NoSuchPointException;
 import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.point.PointJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
@@ -32,7 +32,7 @@ public class PointServiceTest extends TestContainerEnvironment {
     PointJpaRepository pointJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @DisplayName("포인트를 조회할 수 있다.")
     @Test
@@ -175,6 +175,6 @@ public class PointServiceTest extends TestContainerEnvironment {
                 .name(name)
                 .price(price)
                 .build();
-        return itemJpaRepository.save(buildItem);
+        return itemJpaCommandRepository.save(buildItem);
     }
 }

@@ -7,7 +7,7 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.repository.cart.CartJpaRepository;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
@@ -28,7 +28,7 @@ public class CartFacadeTest extends TestContainerEnvironment {
     UserJpaRepository userJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
@@ -105,7 +105,7 @@ public class CartFacadeTest extends TestContainerEnvironment {
     }
 
     private Item createItem(String name, int price) {
-        return itemJpaRepository.save(Item.builder()
+        return itemJpaCommandRepository.save(Item.builder()
                 .name(name)
                 .price(price)
                 .build());

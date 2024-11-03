@@ -9,11 +9,13 @@ import java.util.Set;
 
 public interface ItemRepository {
 
-    List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime);
-
-    List<Item> findAll();
+    Optional<Item> findById(Long itemId);
 
     List<Item> findAllById(Set<Long> itemIds);
 
-    Optional<Item> findById(Long itemId);
+    List<Item> findAllBySearchCond(ItemCommand.ItemSearchCond searchCond);
+
+    long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond);
+
+    List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime);
 }

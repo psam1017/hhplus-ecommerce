@@ -7,7 +7,6 @@ import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
 import hhplus.ecommerce.server.infrastructure.lock.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,8 +26,17 @@ public class ItemService {
         return itemRepository.findTopItems(startDateTime, endDateTime);
     }
 
-    public List<Item> findItems() {
-        return itemRepository.findAll();
+    public List<Item> findItemsBySearchCond(ItemCommand.ItemSearchCond searchCond) {
+        return itemRepository.findAllBySearchCond(searchCond);
+    }
+
+    public long countItemsBySearchCond(ItemCommand.ItemSearchCond searchCond, int contentSize) {
+        if (searchCond.size() > contentSize) {
+            if (searchCond.getOffset() == 0 || contentSize != 0) {
+                return searchCond.getOffset() + contentSize;
+            }
+        }
+        return itemRepository.countAllBySearchCond(searchCond);
     }
 
     public List<Item> findItems(Set<Long> itemIds) {

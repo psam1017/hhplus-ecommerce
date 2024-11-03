@@ -9,7 +9,7 @@ import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
@@ -18,7 +18,6 @@ import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +40,7 @@ public class OrderServiceTest extends TestContainerEnvironment {
     UserJpaRepository userJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
@@ -196,7 +195,7 @@ public class OrderServiceTest extends TestContainerEnvironment {
     }
 
     private Item createItem(String name, int price) {
-        Item item = itemJpaRepository.save(Item.builder()
+        Item item = itemJpaCommandRepository.save(Item.builder()
                 .name(name)
                 .price(price)
                 .build());

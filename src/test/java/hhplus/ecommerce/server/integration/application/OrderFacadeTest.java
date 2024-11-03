@@ -13,7 +13,7 @@ import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
@@ -22,7 +22,6 @@ import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,7 +43,7 @@ public class OrderFacadeTest extends TestContainerEnvironment {
     PointJpaRepository pointJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
@@ -284,7 +283,7 @@ public class OrderFacadeTest extends TestContainerEnvironment {
     }
 
     private Item createItem(String name, int price) {
-        return itemJpaRepository.save(Item.builder()
+        return itemJpaCommandRepository.save(Item.builder()
                 .name(name)
                 .price(price)
                 .build());

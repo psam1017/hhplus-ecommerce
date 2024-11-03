@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface ItemJpaRepository extends JpaRepository<Item, Long> {
+public interface ItemJpaCommandRepository extends JpaRepository<Item, Long> {
 
     @Query("""
             select i

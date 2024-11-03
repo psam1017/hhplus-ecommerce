@@ -6,7 +6,7 @@ import hhplus.ecommerce.server.domain.cart.service.CartService;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.infrastructure.repository.cart.CartJpaRepository;
-import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +27,7 @@ public class CartServiceTest extends TestContainerEnvironment {
     UserJpaRepository userJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
     CartJpaRepository cartJpaRepository;
@@ -162,7 +162,7 @@ public class CartServiceTest extends TestContainerEnvironment {
                 .name(name)
                 .price(price)
                 .build();
-        return itemJpaRepository.save(item);
+        return itemJpaCommandRepository.save(item);
     }
 
     private Cart createCart(int quantity, User user, Item item) {

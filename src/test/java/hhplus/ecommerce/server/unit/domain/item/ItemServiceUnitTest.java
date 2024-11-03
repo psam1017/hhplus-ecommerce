@@ -4,6 +4,7 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemException;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
+import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.item.service.ItemStockRepository;
@@ -67,7 +68,7 @@ public class ItemServiceUnitTest {
         verify(itemRepository, times(1)).findTopItems(startDateTime, endDateTime);
     }
 
-    @DisplayName("모든 상품을 조회할 수 있다.")
+    @DisplayName("상품을 페이징하여 조회할 수 있다.")
     @Test
     void findItems() {
         // given
@@ -82,10 +83,12 @@ public class ItemServiceUnitTest {
                 buildItem(id2, name2, price2)
         );
 
-        when(itemRepository.findAll()).thenReturn(items);
+        when(itemRepository.findAllBySearchCond(any(ItemCommand.ItemSearchCond.class))).thenReturn(items);
+
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, 10, "id", "desc", null);
 
         // when
-        List<Item> result = sut.findItems();
+        List<Item> result = sut.findItemsBySearchCond(searchCond);
 
         // then
         assertThat(result).hasSize(2)
@@ -94,7 +97,41 @@ public class ItemServiceUnitTest {
                         tuple(id1, name1, price1),
                         tuple(id2, name2, price2)
                 );
-        verify(itemRepository, times(1)).findAll();
+        verify(itemRepository, times(1)).findAllBySearchCond(any(ItemCommand.ItemSearchCond.class));
+    }
+
+    @DisplayName("상품 전체 개수가 현재 페이지보다 크면 쿼리로 전체 개수를 조회한다.")
+    @Test
+    void countItemsWhenContentSizeIsLessThanTotalSize() {
+        // given
+        long totalSize = 20;
+        int contentSize = 10;
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, contentSize, "id", "desc", null);
+
+        when(itemRepository.countAllBySearchCond(searchCond)).thenReturn(totalSize);
+
+        // when
+        long result = sut.countItemsBySearchCond(searchCond, contentSize);
+
+        // then
+        assertThat(result).isEqualTo(totalSize);
+        verify(itemRepository, times(1)).countAllBySearchCond(searchCond);
+    }
+
+    @DisplayName("상품 전체 개수가 현재 페이지보다 작으면 쿼리 없이 전체 개수를 계산하여 반환한다.")
+    @Test
+    void countItemsWhenContentSizeIsGreaterThanTotalSize() {
+        // given
+        int size = 10;
+        long totalCount = 5;
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, size, "id", "desc", null);
+
+        // when
+        long result = sut.countItemsBySearchCond(searchCond, (int) totalCount);
+
+        // then
+        assertThat(result).isEqualTo(totalCount);
+        verifyNoInteractions(itemRepository);
     }
 
     @DisplayName("특정 아이디들의 상품을 조회할 수 있다.")

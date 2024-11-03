@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,25 +17,30 @@ import java.util.Set;
 @Repository
 public class ItemRepositoryImpl implements ItemRepository {
 
-    private final ItemJpaRepository itemJpaRepository;
+    private final ItemJpaQueryRepository itemJpaCommandRepository;
 
     @Override
-    public List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return itemJpaRepository.findTopItemsOrderDateTimeBetween(startDateTime, endDateTime);
-    }
-
-    @Override
-    public List<Item> findAll() {
-        return itemJpaRepository.findAll();
+    public Optional<Item> findById(Long itemId) {
+        return itemJpaCommandRepository.findById(itemId);
     }
 
     @Override
     public List<Item> findAllById(Set<Long> itemIds) {
-        return itemJpaRepository.findAllById(itemIds);
+        return itemJpaCommandRepository.findAllById(itemIds);
     }
 
     @Override
-    public Optional<Item> findById(Long itemId) {
-        return itemJpaRepository.findById(itemId);
+    public List<Item> findAllBySearchCond(ItemCommand.ItemSearchCond searchCond) {
+        return itemJpaCommandRepository.findAllBySearchCond(searchCond);
+    }
+
+    @Override
+    public long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond) {
+        return itemJpaCommandRepository.countAllBySearchCond(searchCond);
+    }
+
+    @Override
+    public List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return itemJpaCommandRepository.findTopItemsOrderDateTimeBetween(startDateTime, endDateTime);
     }
 }

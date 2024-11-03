@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.application;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,11 @@ public class ItemFacade {
         return ItemInfo.ItemDetail.from(topItems, stockMap);
     }
 
-    public List<ItemInfo.ItemDetail> findItems() {
-        List<Item> items = itemService.findItems();
+    public ItemInfo.ItemPageInfo pageItems(ItemCommand.ItemSearchCond searchCond) {
+        List<Item> items = itemService.findItemsBySearchCond(searchCond);
+        long count = itemService.countItemsBySearchCond(searchCond, items.size());
         Map<Long, Integer> stockMap = itemService.getStocks(items.stream().map(Item::getId).collect(Collectors.toSet()));
-        return ItemInfo.ItemDetail.from(items, stockMap);
+        List<ItemInfo.ItemDetail> itemDetails = ItemInfo.ItemDetail.from(items, stockMap);
+        return ItemInfo.ItemPageInfo.from(itemDetails, count);
     }
 }
