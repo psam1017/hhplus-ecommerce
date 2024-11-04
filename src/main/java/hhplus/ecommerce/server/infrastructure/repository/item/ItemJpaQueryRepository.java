@@ -94,10 +94,9 @@ public class ItemJpaQueryRepository {
         Order order = Objects.equals(dir, "asc") ? Order.ASC : Order.DESC;
         prop = prop.toLowerCase();
 
-        return switch (prop) {
-            case "id" -> new OrderSpecifier<>(order, item.id);
-            case "name" -> new OrderSpecifier<>(order, item.name);
-            default -> null;
-        };
+        if (prop.equals("price")) {
+            return new OrderSpecifier<>(order, item.price);
+        }
+        return new OrderSpecifier<>(order, item.id);
     }
 }
