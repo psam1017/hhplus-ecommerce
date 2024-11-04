@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,12 +75,14 @@ public class ItemFacadeTest extends TestContainerEnvironment {
     @Test
     void findItems() {
         // given
-        Item item1 = createItem("Test Item1", 1000);
-        Item item2 = createItem("Test Item2", 2000);
-        Item item3 = createItem("Test Item3", 3000);
-        ItemStock itemStock1 = createItemStock(10, item1);
-        ItemStock itemStock2 = createItemStock(20, item2);
-        ItemStock itemStock3 = createItemStock(30, item3);
+        int totalItems = 11;
+        int size = totalItems - 1;
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < totalItems; i++) {
+            Item item = createItem("Test Item" + i, 1000 * (i + 1));
+            createItemStock(size * (i + 1), item);
+            items.add(item);
+        }
 
         ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, 2, "id", "desc", null);
 
@@ -87,16 +91,13 @@ public class ItemFacadeTest extends TestContainerEnvironment {
 
         // then
         List<ItemInfo.ItemDetail> details = pageInfo.itemDetails();
-        assertThat(details).hasSize(2)
-                .extracting(i -> tuple(i.id(), i.name(), i.price(), i.amount()))
-                .containsExactly(
-                        tuple(item3.getId(), item3.getName(), item3.getPrice(), itemStock3.getAmount()),
-                        tuple(item2.getId(), item2.getName(), item2.getPrice(), itemStock2.getAmount())
-                )
-                .doesNotContain(
-                        tuple(item1.getId(), item1.getName(), item1.getPrice(), itemStock1.getAmount())
-                );
-        assertThat(pageInfo.totalCount()).isEqualTo(3);
+        Collections.reverse(items);
+        List<Long> ids = items.subList(0, size).stream().map(Item::getId).toList();
+        assertThat(details).hasSize(size)
+                .extracting(ItemInfo.ItemDetail::id)
+                .containsExactlyElementsOf(ids)
+                .doesNotContain(items.get(items.size() - 1).getId());
+        assertThat(pageInfo.totalCount()).isEqualTo(totalItems);
     }
 
     private Item createItem(String name, int price) {

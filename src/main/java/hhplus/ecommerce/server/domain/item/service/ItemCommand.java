@@ -14,6 +14,7 @@ public class ItemCommand {
             size = size == null || size < 10 ? 10 : Math.min(size, 100);
             prop = prop == null ? "id" : prop;
             dir = dir == null ? "desc" : dir;
+            keyword = keyword == null || keyword.isBlank() ? null : keyword;
             return new ItemSearchCond(page, size, prop, dir, keyword);
         }
 

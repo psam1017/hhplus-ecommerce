@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -74,7 +76,7 @@ public class ItemServiceTest extends TestContainerEnvironment {
     @Test
     void findItemsBySize() {
         // given
-        int totalItems = 4;
+        int totalItems = 11;
         int size = totalItems - 1;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < totalItems; i++) {
@@ -88,10 +90,10 @@ public class ItemServiceTest extends TestContainerEnvironment {
 
         // then
         Collections.reverse(items);
-        List<Tuple> expected = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            expected.add(tuple(items.get(i).getId(), items.get(i).getName(), items.get(i).getPrice()));
-        }
+        List<Tuple> expected = IntStream
+                .range(0, size)
+                .mapToObj(i -> tuple(items.get(i).getId(), items.get(i).getName(), items.get(i).getPrice()))
+                .collect(Collectors.toList());
         assertThat(result).hasSize(size)
                 .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
                 .containsExactlyElementsOf(expected);
@@ -101,8 +103,8 @@ public class ItemServiceTest extends TestContainerEnvironment {
     @Test
     void findItemsByPage() {
         // given
-        int totalItems = 9;
-        int size = 5;
+        int totalItems = 11;
+        int size = 10;
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < totalItems; i++) {
             items.add(createItem("Test Item" + i, 1000 * (i + 1)));
@@ -114,25 +116,22 @@ public class ItemServiceTest extends TestContainerEnvironment {
         List<Item> result = sut.findItemsBySearchCond(searchCond);
 
         // then
-        Collections.reverse(items);
-        List<Tuple> expected = new ArrayList<>();
-        for (int i = size; i < totalItems; i++) {
-            expected.add(tuple(items.get(i).getId(), items.get(i).getName(), items.get(i).getPrice()));
-        }
-        assertThat(result).hasSize(4)
+        assertThat(result).hasSize(1)
                 .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
-                .containsExactlyElementsOf(expected);
+                .containsExactly(
+                        tuple(items.get(0).getId(), items.get(0).getName(), items.get(0).getPrice())
+                );
     }
 
-    @DisplayName("상품을 이름 순서 오름차순으로 조회할 수 있다. prop=name, dir=asc")
+    @DisplayName("상품을 금액 오름차순으로 조회할 수 있다. prop=name, dir=asc")
     @Test
-    void findItemsByNameAsc() {
+    void findItemsByPriceAsc() {
         // given
-        Item item1 = createItem("B", 1000);
-        Item item2 = createItem("A", 2000);
+        Item item1 = createItem("B", 2000);
+        Item item2 = createItem("A", 1000);
         Item item3 = createItem("C", 3000);
 
-        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, 3, "name", "asc", null);
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, 3, "price", "asc", null);
 
         // when
         List<Item> result = sut.findItemsBySearchCond(searchCond);
@@ -353,6 +352,25 @@ public class ItemServiceTest extends TestContainerEnvironment {
         assertThatThrownBy(() -> sut.restoreStock(itemStockId, restoreAmount))
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
+    }
+
+    @DisplayName("상품의 전체 개수를 조회할 수 있다.")
+    @Test
+    void countItemsBySearchCond() {
+        // given
+        int totalItems = 11;
+        int size = 10;
+        for (int i = 0; i < totalItems; i++) {
+            createItem("Test Item" + i, 1000 * (i + 1));
+        }
+
+        ItemCommand.ItemSearchCond searchCond = ItemCommand.ItemSearchCond.of(1, size, "id", "desc", null);
+
+        // when
+        long result = sut.countItemsBySearchCond(searchCond, totalItems);
+
+        // then
+        assertThat(result).isEqualTo(totalItems);
     }
 
     private Item createItem(String name, int price) {
