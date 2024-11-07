@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.infrastructure.lock;
 
+import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,8 +19,6 @@ import java.lang.reflect.Method;
 @Slf4j
 public class DistributedLockAop {
 
-    private static final String REDISSON_LOCK_PREFIX = "lock:";
-
     private final RedissonClient redissonClient;
     private final AopForTransaction aopForTransaction;
 
@@ -29,7 +28,7 @@ public class DistributedLockAop {
         Method method = signature.getMethod();
         DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
 
-        String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
+        String key = CacheName.REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
         RLock rLock = redissonClient.getLock(key);
 
         try {

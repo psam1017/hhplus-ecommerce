@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.domain.item.service;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.ItemStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,4 +19,6 @@ public interface ItemRepository {
     long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond);
 
     List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    void modifyItemStatus(Long id, ItemStatus status);
 }
