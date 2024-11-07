@@ -42,7 +42,7 @@ public class ItemCacheWarmer {
                 List<String> dirs = List.of("asc", "desc");
                 for (String prop : props) {
                     for (String dir : dirs) {
-                        wareUpItemPageCache(cacheLastPage, prop, dir);
+                        warmUpItemPageCache(cacheLastPage, prop, dir);
                     }
                     em.clear();
                 }
@@ -86,7 +86,7 @@ public class ItemCacheWarmer {
                     if (items != null) {
                         for (Item item : items) {
                             if (Objects.equals(item.getId(), hiddenItemId)) {
-                                wareUpItemPageCache(cacheLastPage, prop, dir);
+                                warmUpItemPageCache(cacheLastPage, prop, dir);
                                 found.set(true);
                                 break;
                             }
@@ -113,7 +113,7 @@ public class ItemCacheWarmer {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void wareUpItemPageCache(int cacheLastPage, String prop, String dir) {
+    private void warmUpItemPageCache(int cacheLastPage, String prop, String dir) {
         int size = 10;
         int initialPage = 1;
         int initialOffset = 0;
