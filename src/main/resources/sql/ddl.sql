@@ -65,10 +65,8 @@ CREATE INDEX idx_order_items_order_id ON order_items (order_id);
 CREATE INDEX idx_order_items_item_id ON order_items (item_id);
 CREATE INDEX idx_orders_user_id ON orders (user_id);
 CREATE INDEX idx_points_user_id ON points (user_id);
-CREATE INDEX idx_items_price ON items (price);
 
 # 성능 개선 인덱스 추가
 CREATE INDEX idx_items_price ON items (price);
 CREATE INDEX idx_orders_composite ON orders (status, order_date_time);
 CREATE INDEX idx_order_items_composite ON order_items (order_id, item_id, total_amount);
-
