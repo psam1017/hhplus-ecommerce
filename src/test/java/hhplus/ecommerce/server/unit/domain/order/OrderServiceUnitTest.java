@@ -208,6 +208,25 @@ public class OrderServiceUnitTest {
         verify(orderRepository, times(1)).deleteById(orderId);
     }
 
+    @DisplayName("매출 상위 상품 아이디 목록을 조회할 수 있다.")
+    @Test
+    void findTopItemIds() {
+        // given
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(3);
+        LocalDateTime endDateTime = LocalDateTime.now();
+
+        List<Long> topItemIds = List.of(1L, 2L, 3L);
+
+        when(orderItemRepository.findTopItemIds(startDateTime, endDateTime)).thenReturn(topItemIds);
+
+        // when
+        List<Long> result = sut.findTopItemIds(startDateTime, endDateTime);
+
+        // then
+        assertThat(result).hasSize(3).containsExactly(1L, 2L, 3L);
+        verify(orderItemRepository, times(1)).findTopItemIds(startDateTime, endDateTime);
+    }
+
     private User buildUser(Long userId) {
         return User.builder().id(userId).build();
     }

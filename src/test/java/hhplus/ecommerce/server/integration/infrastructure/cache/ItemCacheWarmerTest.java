@@ -11,6 +11,8 @@ import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
+import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
+import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import hhplus.ecommerce.server.infrastructure.cache.ItemCacheWarmer;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
@@ -34,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.*;
 
 public class ItemCacheWarmerTest extends TestContainerEnvironment {
@@ -46,10 +48,16 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
     ItemService itemService;
 
     @Autowired
+    OrderService orderService;
+
+    @Autowired
     RedisTemplate<String, Object> redisTemplate;
 
     @SpyBean
     ItemRepository itemRepository;
+
+    @SpyBean
+    OrderItemRepository orderItemRepository;
 
     @Autowired
     ItemJpaCommandRepository itemJpaCommandRepository;
@@ -154,10 +162,10 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
         Object dataAfterCache = redisTemplate.opsForValue().get(cacheKey);
         assertThat(dataBeforeCache).isNull();
         assertThat(dataAfterCache).isNotNull();
-        List<Item> itemsAfterCache = convertItems(dataAfterCache);
+        List<Long> itemsAfterCache = convertItemIds(dataAfterCache);
         assertThat(itemsAfterCache).isNotEmpty();
 
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @DisplayName("상위 상품 목록을 미리 캐싱해두면 상품을 조회할 때 쿼리를 수행하지 않는다.")
@@ -170,17 +178,20 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
         createOrderItem(item1, order);
         itemCacheWarmer.warmUpTopItemCaches();
 
+        LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
+        LocalDateTime startDateTime = endDateTime.minusDays(3);
+
         // 캐시 워밍을 위한 쿼리가 발생함
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
 
         // when
-        itemService.findTopItems();
+        orderService.findTopItemIds(startDateTime, endDateTime);
 
         // then - 추가적인 쿼리가 발생하지 않음
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
-    @DisplayName("상위 상품 목록에서 숨겨야 할 상품이 있다면, 캐시를 갱신한다.")
+    @DisplayName("상위 상품 목록에서 숨겨야 할 상품이 있다면, 캐시를 갱신하지만 그 상품이 숨김 상태인지는 모르고 무조건 아이디를 알려준다.")
     @Test
     void whenHiddenItemExists_thenRefreshTopItemCaches() {
         // given
@@ -195,7 +206,7 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
         itemCacheWarmer.warmUpTopItemCaches();
         String cacheKey = "%s::%s".formatted(CacheName.ITEMS_TOP, LocalDate.now().toString());
         Object cacheBeforeRefresh = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> topItemsBeforeRefresh = convertItems(cacheBeforeRefresh);
+        List<Long> topItemsBeforeRefresh = convertItemIds(cacheBeforeRefresh);
 
         itemRepository.modifyItemStatus(item2.getId(), ItemStatus.HIDDEN);
 
@@ -204,17 +215,36 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
 
         // then
         Object cacheAfterRefresh = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> topItemsAfterRefresh = convertItems(cacheAfterRefresh);
+        List<Long> topItemsAfterRefresh = convertItemIds(cacheAfterRefresh);
 
         assertThat(topItemsBeforeRefresh).hasSize(2)
-                .extracting(Item::getId)
                 .containsExactly(
                         item2.getId(),
                         item1.getId()
                 );
-        assertThat(topItemsAfterRefresh).hasSize(1)
-                .extracting(Item::getId)
-                .containsExactly(item1.getId());
+        assertThat(topItemsAfterRefresh).hasSize(2)
+                .containsExactly(
+                        item2.getId(),
+                        item1.getId()
+                );
+    }
+
+    @DisplayName("상위 상품 목록 캐시를 조회하기 전에 상품 상태가 정상이라면, 캐시를 갱신하지 않는다.")
+    @Test
+    void whenActiveItemExists_thenDoNotRefreshTopItemCaches() {
+        // given
+        Order order = createOrder();
+        Item item1 = createItem("Test Item1", 1000);
+        createItemStock(item1);
+        createOrderItem(item1, order);
+
+        itemCacheWarmer.warmUpTopItemCaches();
+
+        // when
+        itemCacheWarmer.refershTopItemCaches(item1.getId());
+
+        // then - 추가적인 쿼리가 발생하지 않음
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @DisplayName("상위 상품 목록에서 숨겨야 할 상품이 포함되지 않는다면 캐시를 갱신하지 않는다.")
@@ -229,13 +259,13 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
         itemCacheWarmer.warmUpTopItemCaches();
 
         // 캐시 워밍을 위한 쿼리가 발생함
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
 
         // when
         itemCacheWarmer.refershTopItemCaches(item1.getId() + 1);
 
         // then - 추가적인 쿼리가 발생하지 않음
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(orderItemRepository, times(1)).findTopItemIds(any(LocalDateTime.class), any(LocalDateTime.class));
     }
 
     @DisplayName("상품 목록 캐시에서 숨겨야 할 상품이 있다면, 캐시를 갱신한다.")
@@ -269,6 +299,23 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
                         .containsExactly(item1.getId());
             }
         }
+    }
+
+    @DisplayName("상품 목록 캐시를 조회하기 전에 상품 상태가 정상이라면, 캐시를 갱신하지 않는다.")
+    @Test
+    void whenActiveItemExists_thenDoNotRefreshItemsPageCaches() {
+        // given
+        Item item1 = createItem("Test Item1", 1000);
+        createItemStock(item1);
+
+        itemCacheWarmer.warmUpItemsPageCaches(1);
+
+        // when
+        itemCacheWarmer.refreshItemPageCaches(1, item1.getId());
+
+        // then
+        verify(itemRepository, times(4)).findAllBySearchCond(any(ItemCommand.ItemSearchCond.class));
+        verify(itemRepository, times(1)).countAllBySearchCond(any(ItemCommand.ItemSearchCond.class));
     }
 
     @DisplayName("상품 목록 캐시에서 숨겨야 할 상품이 포함되지 않는다면 캐시를 갱신하지 않는다.")
@@ -329,6 +376,10 @@ public class ItemCacheWarmerTest extends TestContainerEnvironment {
                 .quantity(1)
                 .build();
         orderItemJpaRepository.save(orderItem);
+    }
+
+    private List<Long> convertItemIds(Object obj) {
+        return om.convertValue(obj, new TypeReference<>() {});
     }
 
     private List<Item> convertItems(Object obj) {

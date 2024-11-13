@@ -15,9 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -33,40 +34,6 @@ public class ItemServiceUnitTest {
 
     @Mock
     ItemStockRepository itemStockRepository;
-
-    @DisplayName("가장 인기 있는 상품들을 조회할 수 있다.")
-    @Test
-    void findTopItems() {
-        // given
-        Long id1 = 1L;
-        String name1 = "Test Item1";
-        int price1 = 1000;
-        Long id2 = 2L;
-        String name2 = "Test Item2";
-        int price2 = 1000;
-
-        LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
-        LocalDateTime startDateTime = endDateTime.minusDays(3);
-
-        List<Item> topItems = List.of(
-                buildItem(id1, name1, price1),
-                buildItem(id2, name2, price2)
-        );
-
-        when(itemRepository.findTopItems(startDateTime, endDateTime)).thenReturn(topItems);
-
-        // when
-        List<Item> result = sut.findTopItems();
-
-        // then
-        assertThat(result).hasSize(2)
-                .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
-                .containsExactly(
-                        tuple(id1, name1, price1),
-                        tuple(id2, name2, price2)
-                );
-        verify(itemRepository, times(1)).findTopItems(startDateTime, endDateTime);
-    }
 
     @DisplayName("상품을 페이징하여 조회할 수 있다.")
     @Test
@@ -387,6 +354,69 @@ public class ItemServiceUnitTest {
                 .isInstanceOf(NoSuchItemStockException.class)
                 .hasMessage(new NoSuchItemStockException().getMessage());
         verify(itemStockRepository, times(1)).findByIdWithLock(itemStockId);
+    }
+
+    @DisplayName("상품들을 전달받은 순서대로 정렬하여 반환할 수 있다.")
+    @Test
+    void findItemsInSameOrder() {
+        // given
+        Long id1 = 1L;
+        String name1 = "Test Item1";
+        int price1 = 1000;
+        Long id2 = 2L;
+        String name2 = "Test Item2";
+        int price2 = 1000;
+
+        List<Long> topItemIds = List.of(id2, id1);
+        List<Item> items = List.of(
+                buildItem(id1, name1, price1),
+                buildItem(id2, name2, price2)
+        );
+
+        when(itemRepository.findAllById(any())).thenReturn(items);
+
+        // when
+        List<Item> result = sut.findItemsInSameOrder(topItemIds);
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
+                .containsExactly(
+                        tuple(id2, name2, price2),
+                        tuple(id1, name1, price1)
+                );
+    }
+
+    @DisplayName("상품들을 전달받은 순서대로 정렬하여 반환할 때 조회되지 않은 상품이 포함되더라도 예외가 발생하지 않고 순서대로 반환한다.")
+    @Test
+    void findItemsInSameOrderWhenNotExistItems() {
+        // given
+        Long id1 = 1L;
+        String name1 = "Test Item1";
+        int price1 = 1000;
+        Long id2 = 2L;
+        String name2 = "Test Item2";
+        int price2 = 1000;
+        Long notExistId = 3L;
+
+        List<Long> topItemIds = List.of(notExistId, id2, id1);
+        List<Item> items = List.of(
+                buildItem(id1, name1, price1),
+                buildItem(id2, name2, price2)
+        );
+
+        when(itemRepository.findAllById(any())).thenReturn(items);
+
+        // when
+        List<Item> result = sut.findItemsInSameOrder(topItemIds);
+
+        // then
+        assertThat(result).hasSize(2)
+                .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
+                .containsExactly(
+                        tuple(id2, name2, price2),
+                        tuple(id1, name1, price1)
+                );
     }
 
     private Item buildItem(Long id, String name, int price) {

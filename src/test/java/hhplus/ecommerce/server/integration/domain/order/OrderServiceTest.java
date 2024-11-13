@@ -188,6 +188,28 @@ public class OrderServiceTest extends TestContainerEnvironment {
         assertThat(orderItemJpaRepository.findAllByOrderId(order.getId())).isEmpty();
     }
 
+    @DisplayName("매출 상위 상품 아이디 목록을 조회할 수 있다.")
+    @Test
+    void findTopItemIds() {
+        // given
+        User user = createUser("TestUser");
+        Item item1 = createItem("Item1", 1000);
+        Item item2 = createItem("Item2", 2000);
+        Order order = createOrder(user);
+        createOrderItem("Item1", 1000, 1, order, item1);
+        createOrderItem("Item2", 2000, 2, order, item2);
+
+        LocalDateTime startDateTime = LocalDateTime.now().minusDays(3);
+        LocalDateTime endDateTime = LocalDateTime.now().plusDays(1);
+
+        // when
+        List<Long> result = sut.findTopItemIds(startDateTime, endDateTime);
+
+        // then
+        assertThat(result).hasSize(2)
+                .containsExactly(item2.getId(), item1.getId());
+    }
+
     private User createUser(String username) {
         return userJpaRepository.save(User.builder()
                 .username(username)

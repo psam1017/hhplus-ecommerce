@@ -2,6 +2,7 @@ package hhplus.ecommerce.server.domain.order.service;
 
 import hhplus.ecommerce.server.domain.order.OrderItem;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -14,4 +15,6 @@ public interface OrderItemRepository {
     Map<Long, Integer> findOrderAmounts(List<Long> orderIds);
 
     void deleteAll(List<OrderItem> orderItems);
+
+    List<Long> findTopItemIds(LocalDateTime startDateTime, LocalDateTime endDateTime);
 }

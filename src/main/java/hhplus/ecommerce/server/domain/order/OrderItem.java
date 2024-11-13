@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
         name = "order_items",
         indexes = {
                 @Index(name = "idx_order_items_order_id", columnList = "order_id"),
-                @Index(name = "idx_order_items_item_id", columnList = "item_id")
+                @Index(name = "idx_order_items_item_id", columnList = "item_id"),
+                @Index(name = "idx_order_items_composite", columnList = "order_id, item_id, total_amount")
         }
 )
 @Entity
@@ -26,6 +27,7 @@ public class OrderItem {
     private String name;
     private int price;
     private int quantity;
+    private int totalAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -47,6 +49,7 @@ public class OrderItem {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
+        this.totalAmount = price * quantity;
         this.order = order;
         this.item = item;
     }

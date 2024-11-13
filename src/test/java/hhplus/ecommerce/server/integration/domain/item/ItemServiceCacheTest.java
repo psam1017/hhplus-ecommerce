@@ -6,13 +6,8 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
-import hhplus.ecommerce.server.domain.order.Order;
-import hhplus.ecommerce.server.domain.order.OrderItem;
-import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
-import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
-import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -47,62 +40,7 @@ public class ItemServiceCacheTest extends TestContainerEnvironment {
     ItemJpaCommandRepository itemJpaCommandRepository;
 
     @Autowired
-    OrderJpaRepository orderJpaRepository;
-
-    @Autowired
-    OrderItemJpaRepository orderItemJpaRepository;
-
-    @Autowired
     ObjectMapper om;
-
-    @DisplayName("상위 상품 목록을 조회하면서 cache miss 가 발생하면 Look Around 로 캐시를 생성한다.")
-    @Test
-    void findTopItemsWithCacheMiss() {
-        //  given
-        String cacheKey = "%s::%s".formatted(CacheName.ITEMS_TOP, LocalDate.now().toString());
-        Object dataBeforeCache = redisTemplate.opsForValue().get(cacheKey);
-
-        Item item1 = createItem("Test Item1", 1000);
-        Item item2 = createItem("Test Item2", 2000);
-
-        Order order = createOrder();
-        createOrderItem(item1, order, 10);
-
-        // when
-        List<Item> result = itemService.findTopItems();
-
-        // then
-        Object dataAfterCache = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> cachedItems = convertItems(dataAfterCache);
-        Item cachedItem = cachedItems.get(0);
-
-        assertThat(dataBeforeCache).isNull();
-        assertThat(dataAfterCache).isNotNull();
-        assertThat(result).hasSize(1)
-                .extracting(i -> tuple(i.getId(), i.getName(), i.getPrice()))
-                .containsExactly(tuple(item1.getId(), item1.getName(), item1.getPrice()))
-                .containsExactly(tuple(cachedItem.getId(), cachedItem.getName(), cachedItem.getPrice()))
-                .doesNotContain(tuple(item2.getId(), item2.getName(), item2.getPrice()));
-    }
-
-    @DisplayName("상위 상품 목록에서 cache hit 이 발생하면, 쿼리는 실행되지 않는다.")
-    @Test
-    void findTopItemsWithCacheHit() {
-        // given
-        Item item1 = createItem("Test Item1", 1000);
-        Item item2 = createItem("Test Item2", 2000);
-
-        Order order = createOrder();
-        createOrderItem(item1, order, 10);
-        createOrderItem(item2, order, 4);
-
-        // when
-        itemService.findTopItems();
-        itemService.findTopItems();
-
-        // then
-        verify(itemRepository, times(1)).findTopItems(any(LocalDateTime.class), any(LocalDateTime.class));
-    }
 
     @DisplayName("페이징할 때 검색어가 없으면 캐시 데이터를 생성한다.")
     @Test
@@ -337,26 +275,6 @@ public class ItemServiceCacheTest extends TestContainerEnvironment {
                 .name(name)
                 .price(price)
                 .build());
-    }
-
-    private Order createOrder() {
-        Order order = Order.builder()
-                .status(OrderStatus.ORDERED)
-                .orderDateTime(LocalDateTime.now().minusDays(1))
-                .build();
-        orderJpaRepository.save(order);
-        return order;
-    }
-
-    private void createOrderItem(Item item, Order order, int quantity) {
-        OrderItem orderItem = OrderItem.builder()
-                .order(order)
-                .item(item)
-                .name(item.getName())
-                .price(item.getPrice())
-                .quantity(quantity)
-                .build();
-        orderItemJpaRepository.save(orderItem);
     }
 
     private List<Item> convertItems(Object obj) {

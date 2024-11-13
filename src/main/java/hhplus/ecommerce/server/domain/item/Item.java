@@ -10,7 +10,12 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("status = 'ACTIVE'")
-@Table(name = "items")
+@Table(
+        name = "items",
+        indexes = {
+                @Index(name = "idx_items_price", columnList = "price")
+        }
+)
 @Entity
 public class Item {
 
@@ -31,5 +36,13 @@ public class Item {
         this.name = name;
         this.price = price;
         this.status = ItemStatus.ACTIVE;
+    }
+
+    public boolean isActive() {
+        return this.status == ItemStatus.ACTIVE;
+    }
+
+    public void hide() {
+        this.status = ItemStatus.HIDDEN;
     }
 }

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,8 +59,11 @@ public class ItemFacadeTest extends TestContainerEnvironment {
         createOrderItem(item2, order, 4);
         createOrderItem(item3, order, 2);
 
+        LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
+        LocalDateTime startDateTime = endDateTime.minusDays(3);
+
         // when
-        List<ItemInfo.ItemDetail> result = itemFacade.findTopItems();
+        List<ItemInfo.ItemDetail> result = itemFacade.findTopItems(startDateTime, endDateTime);
 
         // then
         assertThat(result).hasSize(3)

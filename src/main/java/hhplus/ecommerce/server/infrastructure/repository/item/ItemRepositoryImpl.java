@@ -42,11 +42,6 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return itemJpaQueryRepository.findTopItemsOrderDateTimeBetween(startDateTime, endDateTime);
-    }
-
-    @Override
     public void modifyItemStatus(Long id, ItemStatus status) {
         itemJpaCommandRepository.modifyItemStatus(id, status);
     }

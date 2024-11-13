@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
+import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -28,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ItemCacheWarmer {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final OrderItemRepository orderItemRepository;
     private final ItemRepository itemRepository;
     private final EntityManager em;
     private final ObjectMapper om;
@@ -62,8 +65,8 @@ public class ItemCacheWarmer {
         if (acquired != null && acquired) {
             log.trace("Warming up top item caches");
             try {
-                List<Item> topItems = itemRepository.findTopItems(startDateTime, endDateTime);
-                redisTemplate.opsForValue().set(cacheKey, topItems, Duration.ofHours(24));
+                List<Long> topItemIds = orderItemRepository.findTopItemIds(startDateTime, endDateTime);
+                redisTemplate.opsForValue().set(cacheKey, topItemIds, Duration.ofHours(24));
             } finally {
                 redisTemplate.delete(CacheName.ITEM_TOP_WARM);
             }
@@ -71,6 +74,11 @@ public class ItemCacheWarmer {
     }
 
     public void refreshItemPageCaches(int cacheLastPage, Long hiddenItemId) {
+        Optional<Item> optItem = itemRepository.findById(hiddenItemId);
+        if (optItem.isPresent() && optItem.get().isActive()) {
+            return;
+        }
+
         List<String> props = List.of("id", "price");
         List<String> dirs = List.of("asc", "desc");
         AtomicBoolean found = new AtomicBoolean(false);
@@ -81,7 +89,7 @@ public class ItemCacheWarmer {
                 for (int page = 1; page <= cacheLastPage; page++) {
                     String cacheKey = "%s::page:%d:size:%d:prop:%s:dir:%s".formatted(CacheName.ITEMS_PAGE, page, size, prop, dir);
                     Object cache = redisTemplate.opsForValue().get(cacheKey);
-                    List<Item> items = readItems(cache);
+                    List<Item> items = converItems(cache);
 
                     if (items != null) {
                         for (Item item : items) {
@@ -101,12 +109,17 @@ public class ItemCacheWarmer {
     }
 
     public void refershTopItemCaches(Long hiddenItemId) {
+        Optional<Item> optItem = itemRepository.findById(hiddenItemId);
+        if (optItem.isPresent() && optItem.get().isActive()) {
+            return;
+        }
+
         String cacheKey = "%s::%s".formatted(CacheName.ITEMS_TOP, LocalDate.now().toString());
         Object cache = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> topItems = readItems(cache);
-        if (topItems != null) {
-            topItems.stream().
-                    filter(i -> Objects.equals(i.getId(), hiddenItemId))
+        List<Long> topItemIds = converItemIds(cache);
+        if (topItemIds != null) {
+            topItemIds.stream().
+                    filter(i -> Objects.equals(i, hiddenItemId))
                     .findAny()
                     .ifPresent(item -> warmUpTopItemCaches());
         }
@@ -150,7 +163,11 @@ public class ItemCacheWarmer {
         redisTemplate.opsForValue().set("%s::count".formatted(CacheName.ITEMS_PAGE), count, Duration.ofMinutes(10));
     }
 
-    private List<Item> readItems(Object obj) {
+    private List<Item> converItems(Object obj) {
+        return obj == null ? null : om.convertValue(obj, new TypeReference<>() {});
+    }
+
+    private List<Long> converItemIds(Object obj) {
         return obj == null ? null : om.convertValue(obj, new TypeReference<>() {});
     }
 }

@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -21,16 +22,6 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemStockRepository itemStockRepository;
-
-    @Cacheable(
-            cacheNames = CacheName.ITEMS_TOP,
-            key = "T(java.time.LocalDate).now().toString()"
-    )
-    public List<Item> findTopItems() {
-        LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
-        LocalDateTime startDateTime = endDateTime.minusDays(3);
-        return itemRepository.findTopItems(startDateTime, endDateTime);
-    }
 
     @Cacheable(
             cacheNames = CacheName.ITEMS_PAGE,
@@ -99,5 +90,18 @@ public class ItemService {
     public void restoreStock(Long itemStockId, int amount) {
         ItemStock itemStock = itemStockRepository.findByIdWithLock(itemStockId).orElseThrow(NoSuchItemStockException::new);
         itemStock.addStock(amount);
+    }
+
+    public List<Item> findItemsInSameOrder(List<Long> topItemIds) {
+        List<Item> items = itemRepository.findAllById(new HashSet<>(topItemIds));
+        return sortItemsByTopItemIds(topItemIds, items);
+    }
+
+    private List<Item> sortItemsByTopItemIds(List<Long> topItemIds, List<Item> items) {
+        Map<Long, Item> itemMap = items.stream().collect(Collectors.toMap(Item::getId, item -> item));
+        return topItemIds.stream()
+                .filter(itemMap::containsKey)
+                .map(itemMap::get)
+                .toList();
     }
 }

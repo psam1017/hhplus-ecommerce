@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +44,8 @@ public class ItemControllerTest {
                 new ItemInfo.ItemDetail(102L, "바나나", 2000, 5)
         );
 
-        when(itemFacade.findTopItems()).thenReturn(topItems);
+        when(itemFacade.findTopItems(any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(topItems);
 
         // when
         ResultActions resultActions = mockMvc.perform(

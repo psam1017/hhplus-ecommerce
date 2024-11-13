@@ -4,9 +4,14 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
+import hhplus.ecommerce.server.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,12 +20,14 @@ import java.util.stream.Collectors;
 @Component
 public class ItemFacade {
 
+    private final OrderService orderService;
     private final ItemService itemService;
 
-    public List<ItemInfo.ItemDetail> findTopItems() {
-        List<Item> topItems = itemService.findTopItems();
-        Map<Long, Integer> stockMap = itemService.getStocks(topItems.stream().map(Item::getId).collect(Collectors.toSet()));
-        return ItemInfo.ItemDetail.from(topItems, stockMap);
+    public List<ItemInfo.ItemDetail> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        List<Long> topItemIds = orderService.findTopItemIds(startDateTime, endDateTime);
+        List<Item> items = itemService.findItemsInSameOrder(topItemIds);
+        Map<Long, Integer> stockMap = itemService.getStocks(items.stream().map(Item::getId).collect(Collectors.toSet()));
+        return ItemInfo.ItemDetail.from(items, stockMap);
     }
 
     public ItemInfo.ItemPageInfo pageItems(ItemCommand.ItemSearchCond searchCond) {

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "item_stocks",
         indexes = {
-                @Index(name = "idx_item_stocks_item_id", columnList = "item_id")
+                @Index(name = "idx_item_stocks_item_id", columnList = "item_id", unique = true)
         }
 )
 @Entity

@@ -5,10 +5,13 @@ import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
 import hhplus.ecommerce.server.domain.user.User;
+import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -46,5 +49,13 @@ public class OrderService {
         List<OrderItem> orderItems = orderItemRepository.findAllByOrderId(orderId);
         orderItemRepository.deleteAll(orderItems);
         orderRepository.deleteById(orderId);
+    }
+
+    @Cacheable(
+            cacheNames = CacheName.ITEMS_TOP,
+            key = "T(java.time.LocalDate).now().toString()"
+    )
+    public List<Long> findTopItemIds(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return orderItemRepository.findTopItemIds(startDateTime, endDateTime);
     }
 }

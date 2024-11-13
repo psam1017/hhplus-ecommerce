@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,5 +42,10 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     @Override
     public void deleteAll(List<OrderItem> orderItems) {
         orderItemJpaRepository.deleteAll(orderItems);
+    }
+
+    @Override
+    public List<Long> findTopItemIds(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return orderItemJpaRepository.findTopItemIds(startDateTime, endDateTime);
     }
 }

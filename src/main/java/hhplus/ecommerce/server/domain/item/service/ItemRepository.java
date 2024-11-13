@@ -18,7 +18,5 @@ public interface ItemRepository {
 
     long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond);
 
-    List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime);
-
     void modifyItemStatus(Long id, ItemStatus status);
 }

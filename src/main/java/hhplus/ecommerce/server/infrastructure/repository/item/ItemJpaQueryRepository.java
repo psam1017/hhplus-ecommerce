@@ -3,6 +3,7 @@ package hhplus.ecommerce.server.infrastructure.repository.item;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
@@ -53,32 +54,11 @@ public class ItemJpaQueryRepository {
     }
 
     public long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond) {
-        Long count = query.select(item.countDistinct())
+        Long count = query.select(Wildcard.count)
                 .from(item)
                 .where(itemNameContains(searchCond.keyword()))
                 .fetchOne();
         return count != null ? count : 0;
-    }
-
-    public List<Item> findTopItemsOrderDateTimeBetween(
-            LocalDateTime startDateTime,
-            LocalDateTime endDateTime
-    ) {
-        QOrderItem qOrderItem = QOrderItem.orderItem;
-        QOrder qOrder = QOrder.order;
-        return query
-                .select(item)
-                .from(item)
-                .leftJoin(qOrderItem).on(item.id.eq(qOrderItem.item.id))
-                .leftJoin(qOrder).on(qOrderItem.order.id.eq(qOrder.id))
-                .where(
-                        qOrder.status.eq(OrderStatus.ORDERED),
-                        qOrder.orderDateTime.between(startDateTime, endDateTime)
-                )
-                .groupBy(item)
-                .orderBy(qOrderItem.quantity.multiply(qOrderItem.price).sum().desc())
-                .limit(5)
-                .fetch();
     }
 
     private BooleanExpression itemNameContains(String keyword) {

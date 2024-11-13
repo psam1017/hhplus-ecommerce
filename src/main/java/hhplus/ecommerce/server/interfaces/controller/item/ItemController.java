@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Tag(
         name = "상품",
         description = "상품에 대한 API"
@@ -42,7 +45,9 @@ public class ItemController {
     )
     @GetMapping("/top")
     public ItemDto.ItemResponseList findTopItems() {
-        return ItemDto.ItemResponseList.from(itemFacade.findTopItems());
+        LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
+        LocalDateTime startDateTime = endDateTime.minusDays(3);
+        return ItemDto.ItemResponseList.from(itemFacade.findTopItems(startDateTime, endDateTime));
     }
 
     @Operation(
