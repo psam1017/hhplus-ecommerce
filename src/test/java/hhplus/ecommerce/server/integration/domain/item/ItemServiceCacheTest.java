@@ -73,7 +73,7 @@ public class ItemServiceCacheTest extends TestContainerEnvironment {
 
         // then
         Object dataAfterCache = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> cachedItems = readItems(dataAfterCache);
+        List<Item> cachedItems = convertItems(dataAfterCache);
         Item cachedItem = cachedItems.get(0);
 
         assertThat(dataBeforeCache).isNull();
@@ -125,7 +125,7 @@ public class ItemServiceCacheTest extends TestContainerEnvironment {
 
         // then
         Object dataAfterCache = redisTemplate.opsForValue().get(cacheKey);
-        List<Item> cachedItems = readItems(dataAfterCache);
+        List<Item> cachedItems = convertItems(dataAfterCache);
         Item cachedItem1 = cachedItems.get(0);
         Item cachedItem2 = cachedItems.get(1);
 
@@ -359,11 +359,7 @@ public class ItemServiceCacheTest extends TestContainerEnvironment {
         orderItemJpaRepository.save(orderItem);
     }
 
-    private List<Item> readItems(Object obj) {
-        try {
-            return om.convertValue(obj, new TypeReference<>() {});
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private List<Item> convertItems(Object obj) {
+        return om.convertValue(obj, new TypeReference<>() {});
     }
 }

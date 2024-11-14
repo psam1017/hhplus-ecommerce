@@ -1,6 +1,7 @@
 package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.ItemStatus;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,30 +18,36 @@ import java.util.Set;
 @Repository
 public class ItemRepositoryImpl implements ItemRepository {
 
-    private final ItemJpaQueryRepository itemJpaCommandRepository;
+    private final ItemJpaCommandRepository itemJpaCommandRepository;
+    private final ItemJpaQueryRepository itemJpaQueryRepository;
 
     @Override
     public Optional<Item> findById(Long itemId) {
-        return itemJpaCommandRepository.findById(itemId);
+        return itemJpaQueryRepository.findById(itemId);
     }
 
     @Override
     public List<Item> findAllById(Set<Long> itemIds) {
-        return itemJpaCommandRepository.findAllById(itemIds);
+        return itemJpaQueryRepository.findAllById(itemIds);
     }
 
     @Override
     public List<Item> findAllBySearchCond(ItemCommand.ItemSearchCond searchCond) {
-        return itemJpaCommandRepository.findAllBySearchCond(searchCond);
+        return itemJpaQueryRepository.findAllBySearchCond(searchCond);
     }
 
     @Override
     public long countAllBySearchCond(ItemCommand.ItemSearchCond searchCond) {
-        return itemJpaCommandRepository.countAllBySearchCond(searchCond);
+        return itemJpaQueryRepository.countAllBySearchCond(searchCond);
     }
 
     @Override
     public List<Item> findTopItems(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return itemJpaCommandRepository.findTopItemsOrderDateTimeBetween(startDateTime, endDateTime);
+        return itemJpaQueryRepository.findTopItemsOrderDateTimeBetween(startDateTime, endDateTime);
+    }
+
+    @Override
+    public void modifyItemStatus(Long id, ItemStatus status) {
+        itemJpaCommandRepository.modifyItemStatus(id, status);
     }
 }

@@ -1,30 +1,22 @@
 package hhplus.ecommerce.server.infrastructure.repository.item;
 
 import hhplus.ecommerce.server.domain.item.Item;
+import hhplus.ecommerce.server.domain.item.ItemStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 public interface ItemJpaCommandRepository extends JpaRepository<Item, Long> {
 
+    @Modifying(flushAutomatically = true)
     @Query("""
-            select i
-            from Item i
-            left join OrderItem oi
-            on i.id = oi.item.id
-            left join Order o
-            on oi.order.id = o.id
-            where o.status = 'ORDERED'
-              and o.orderDateTime between :startDateTime and :endDateTime
-            group by i
-            order by sum(oi.quantity * oi.price) desc
-            limit 5
+            update Item i
+            set i.status = :status
+            where i.id = :id
             """)
-    List<Item> findTopItemsOrderDateTimeBetween(
-            @Param("startDateTime") LocalDateTime startDateTime,
-            @Param("endDateTime") LocalDateTime endDateTime
+    void modifyItemStatus(
+            @Param("id") Long id,
+            @Param("status") ItemStatus status
     );
 }
