@@ -4,8 +4,10 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemException;
 import hhplus.ecommerce.server.domain.item.exception.NoSuchItemStockException;
+import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import hhplus.ecommerce.server.infrastructure.lock.DistributedLock;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,16 +22,36 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final ItemStockRepository itemStockRepository;
 
+    @Cacheable(
+            cacheNames = CacheName.ITEMS_TOP,
+            key = "T(java.time.LocalDate).now().toString()"
+    )
     public List<Item> findTopItems() {
         LocalDateTime endDateTime = LocalDate.now().atStartOfDay();
         LocalDateTime startDateTime = endDateTime.minusDays(3);
         return itemRepository.findTopItems(startDateTime, endDateTime);
     }
 
+    @Cacheable(
+            cacheNames = CacheName.ITEMS_PAGE,
+            condition = """
+                    #searchCond.page() < 100
+                    && #searchCond.size() == 10
+                    && T(java.util.List).of("id", "price").contains(#searchCond.prop())
+                    && T(java.util.List).of("asc", "desc").contains(#searchCond.dir())
+                    && (#searchCond.keyword() == null || #searchCond.keyword().isBlank())
+                    """,
+            key = "T(String).format('page:%d:size:%d:prop:%s:dir:%s', #searchCond.page(), #searchCond.size(), #searchCond.prop(), #searchCond.dir())"
+    )
     public List<Item> findItemsBySearchCond(ItemCommand.ItemSearchCond searchCond) {
         return itemRepository.findAllBySearchCond(searchCond);
     }
 
+    @Cacheable(
+            cacheNames = CacheName.ITEMS_PAGE,
+            condition = "#searchCond.keyword() == null || #searchCond.keyword().isBlank()",
+            key = "'count'"
+    )
     public long countItemsBySearchCond(ItemCommand.ItemSearchCond searchCond, int contentSize) {
         if (searchCond.size() > contentSize) {
             if (searchCond.getOffset() == 0 || contentSize != 0) {
