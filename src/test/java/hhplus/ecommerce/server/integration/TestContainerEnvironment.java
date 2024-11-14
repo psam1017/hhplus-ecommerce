@@ -6,11 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+@RecordApplicationEvents
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -22,9 +26,13 @@ public abstract class TestContainerEnvironment {
     @Autowired
     private DataCleaner dataCleaner;
 
+    @Autowired
+    private ApplicationEvents applicationEvents;
+
     @AfterEach
     void tearDown() {
         dataCleaner.cleanAll();
+        applicationEvents.clear();
     }
 
     // MySQL 시작

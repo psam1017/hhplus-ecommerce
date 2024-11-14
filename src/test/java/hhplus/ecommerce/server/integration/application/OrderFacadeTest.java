@@ -12,7 +12,7 @@ import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.exception.OutOfPointException;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
+import hhplus.ecommerce.server.infrastructure.event.OrderCreatedEvent;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
@@ -22,15 +22,14 @@ import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.event.ApplicationEvents;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class OrderFacadeTest extends TestContainerEnvironment {
 
     @Autowired
@@ -54,10 +53,10 @@ public class OrderFacadeTest extends TestContainerEnvironment {
     @Autowired
     OrderItemJpaRepository orderItemJpaRepository;
 
-    @MockBean
-    OrderDataPlatform orderDataPlatform;
+    @Autowired
+    ApplicationEvents applicationEvents;
 
-    @DisplayName("주문을 생성할 수 있다.")
+    @DisplayName("주문을 생성하고 이벤트를 발행할 수 있다.")
     @Test
     void createOrder() {
         // given
@@ -89,7 +88,8 @@ public class OrderFacadeTest extends TestContainerEnvironment {
                         tuple(item1.getId(), item1.getName(), item1.getPrice(), 10),
                         tuple(item2.getId(), item2.getName(), item2.getPrice(), 20)
                 );
-        Mockito.verify(orderDataPlatform, Mockito.times(1)).saveOrderData(Mockito.anyMap());
+        List<OrderCreatedEvent> events = applicationEvents.stream(OrderCreatedEvent.class).toList();
+        assertThat(events).isNotEmpty();
     }
 
     @DisplayName("사용자의 주문 목록을 조회할 수 있다.")
@@ -225,48 +225,6 @@ public class OrderFacadeTest extends TestContainerEnvironment {
                 .hasMessage(new OutOfPointException(leftPoint).getMessage());
         ItemStock itemStock = itemStockJpaRepository.findByItemId(item.getId()).orElseThrow();
         assertThat(itemStock.getAmount()).isEqualTo(10);
-    }
-
-    @DisplayName("주문 생성 이후에 로직이 실패하면 트랜잭션 보상 로직으로 주문을 취소하고 포인트와 재고를 복원시킬 수 있다.")
-    @Test
-    void createOrder_withFailure() {
-        // mock
-        willThrow(new RuntimeException())
-                .given(orderDataPlatform).saveOrderData(Mockito.anyMap());
-
-        // given
-        User user = createUser("testUser");
-        Point point = createPoint(50000, user);
-        Item item1 = createItem("item1", 1000);
-        createItemStock(10, item1);
-        Item item2 = createItem("item2", 2000);
-        createItemStock(20, item2);
-
-        OrderCommand.CreateOrder command = new OrderCommand.CreateOrder(
-                user.getId(),
-                List.of(
-                        new OrderCommand.CreateOrderItem(item1.getId(), 10),
-                        new OrderCommand.CreateOrderItem(item2.getId(), 20)
-                ));
-
-        // when
-        // then
-        assertThatThrownBy(() -> orderFacade.createOrder(command))
-                .isInstanceOf(RuntimeException.class);
-
-        assertThat(orderJpaRepository.findAll()).isEmpty();
-        assertThat(orderItemJpaRepository.findAll()).isEmpty();
-
-        point = pointJpaRepository.findById(point.getId()).orElseThrow();
-        assertThat(point.getAmount()).isEqualTo(50000);
-
-        List<ItemStock> itemStocks = itemStockJpaRepository.findAll();
-        assertThat(itemStocks).hasSize(2)
-                .extracting(is -> tuple(is.getId(), is.getAmount()))
-                .containsExactlyInAnyOrder(
-                        tuple(item1.getId(), 10),
-                        tuple(item2.getId(), 20)
-                );
     }
 
     private User createUser(String username) {
