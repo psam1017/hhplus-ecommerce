@@ -3,11 +3,12 @@
 이 문서에서는 현재 서비스 코드 구조에서 트랜잭션 범위를 파악하고, 이로부터 발생하는 한계와 이를 극복하는 방안에 대해 기술합니다.
 
 1. [프로젝트 구조 분석](#프로젝트-구조-분석)
-2. [트랜잭션 범위(과거)](#트랜잭션-범위과거)
-3. [트랜잭션 범위(현재)](#트랜잭션-범위현재)
+2. [트랜잭션 분석(과거)](#트랜잭션-분석과거)
+3. [트랜잭션 분석(현재)](#트랜잭션-분석현재)
 4. [구조적 문제점 분석](#구조적-문제점-분석)
 5. [한계 극복 : 이벤트 주도 아키텍처와 SAGA 패턴](#한계-극복--이벤트-주도-아키텍처와-saga-패턴)
-6. [트랜잭션 범위(미래)](#트랜잭션-범위미래)
+6. [트랜잭션 분석(미래)](#트랜잭션-분석미래)
+7. [결론](#결론)
 
 ## 프로젝트 구조 분석
 
@@ -28,14 +29,14 @@
 
 이 Repository 에서는 DIP 를 적용하여 구체적인 기술에 의존하지 않도록 설계했으며, 이 Repository 는 **infrastructure 계층**에서 구현하고 이에 대한 의존성을 Spring Framework 가 주입하고 있습니다.
 
-이와 관련해서 제 코드는 분산락을 만나면서 트랜잭션 범위가 과거에 한 번 바뀌었고, 이번 주차를 거치면서 한 번 더 바뀔 예정입니다. 이에 각 코드를 과거, 현재, 미래로 구분해봤습니다.
+이와 관련해서 제 코드는 분산락을 만나면서 트랜잭션 범위가 과거에 한 번 바뀌었고, 이번 주차를 거치면서 한 번 더 바뀔 예정입니다. 이에 각 코드를 과거, 현재, 미래로 구분하여 분석했습니다.
 
 </details>
 
-## 트랜잭션 범위(과거)
+## 트랜잭션 분석(과거)
 
 <details>
-  <summary>트랜잭션 범위(과거)</summary>
+  <summary>트랜잭션 분석(과거)</summary>
 
 분산락 이전에 제 코드는 **Facade 에 @Transactional** 이 적용되어 있었습니다. 불필요한 부분을 생략하고 보면 아래와 같습니다.
 
@@ -61,17 +62,17 @@ Facade 에서부터 트랜잭션이 적용되어 상품 차감, 포인트 차감
 
 </details>
 
-## 트랜잭션 범위(현재)
+## 트랜잭션 분석(현재)
 
 <details>
-  <summary>트랜잭션 범위(현재)</summary>
+  <summary>트랜잭션 분석(현재)</summary>
 
 Facade 에 트랜잭션이 적용된 상태에서 분산락을 도입했을 때 트랜잭션 및 분산락 간의 경합이 발생하여 교착상태에 빠지게 되었습니다. 교착상태가 발생한 원인 및 극복과정은 [이커머스 동시성 이슈 분석 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/main/docs/concurrency/note.md)에서 확인할 수 있습니다.
 
 이에 Facade 에서 적용한 @Transactional 을 제거하고 **각 서비스에서만 @Transactional** 을 적용하게 되었으며, 전체의 논리적 트랜잭션과 서비스 단위의 트랜잭션간의 원자성을 지키기 위해 **각 작업마다 보상 트랜잭션**을 스택 구조로 쌓고 예외 발생 시 이 보상 트랜잭션을 실행시켰습니다.
 
 ```
-public Long createOrder(OrderCommand.CreateOrder command) {
+public Long createOrder(OrderCommand command) {
 
     Deque<Runnable> compensationActions = new ArrayDeque<>();
 
@@ -89,10 +90,10 @@ public Long createOrder(OrderCommand.CreateOrder command) {
     }
 }
 
-private Long processOrder(OrderCommand.CreateOrder command, Deque<Runnable> compensationActions) {
+private Long processOrder(OrderCommand command, Deque<Runnable> compensationActions) {
 
 
-    for (Long itemId : itemIdStockAmountMap.keySet()) {
+    for (Long itemId : command.itemIds()) {
         itemService.deductStocks(...);
         compensationActions.push(() -> itemService.restoreStock(...));
     }
@@ -125,9 +126,9 @@ Facade 코드만 보더라도 뭔가 굉장히 복잡해졌습니다. 이는 하
 
 개발 초기 단계에서라면 관리가 가능한 규모의 한 프로젝트 및 트랜잭션으로 하는 게 유리할 수 있지만, 서비스 규모가 확장되면 될수록 생기는 문제가 생깁니다.
 
-- **유지보수의 어려움** : 위와 같이 하나의 메서드에서 필요한 모든 작업과, 심지어 보상트랜잭션 작업까지 해야 한다면 서비스가 복잡해지고 확장될 수록 하나의 전체 트랜잭션에서 작업해야 할 코드가 커지게 됩니다.
-- **도메인 로직과 부가적인 로직의 결합** : 도메인 서비스는 도메인에서 일어나는 일에만 관심이 있습니다. 그런데 부가적인 로직도 알아야 하고, 추가로 부가적인 로직, 예를 들어 위 코드의 `OrderDataPlatform` 에서 예외가 발생한다면 원래는 성공해야 할 도메인 로직까지 전체 롤백될 수 있습니다.
-- **긴 시간 동안 수행되는 작업에 의한 지연 및 타임아웃** : 도메인 로직과 부가적인 로직 모두 합쳐서 주어진 커넥션(TCP/IP, DB, 분산락, 외부 플랫폼, ...) 시간 안으로 작업을 마쳐야 하는데 서비스 규모가 커지고 작업량이 많아지면 이 시간 안에 작업을 성공하지 못 할 수도 있습니다.
+1. **유지보수의 어려움** : 위와 같이 하나의 메서드에서 필요한 모든 작업과, 심지어 보상트랜잭션 작업까지 해야 한다면 서비스가 복잡해지고 확장될 수록 하나의 전체 트랜잭션에서 작업해야 할 코드가 커지게 됩니다.
+2. **도메인 로직과 부가적인 로직의 결합** : 도메인 서비스는 도메인에서 일어나는 일에만 관심이 있습니다. 그런데 부가적인 로직도 알아야 하고, 추가로 부가적인 로직, 예를 들어 위 코드의 `OrderDataPlatform` 에서 예외가 발생한다면 원래는 성공해야 할 도메인 로직까지 전체 롤백될 수 있습니다.
+3. **긴 시간 동안 수행되는 작업에 의한 지연 및 타임아웃** : 도메인 로직과 부가적인 로직 모두 합쳐서 주어진 커넥션(TCP/IP, DB, 분산락, 외부 플랫폼, ...) 시간 안으로 작업을 마쳐야 하는데 서비스 규모가 커지고 작업량이 많아지면 이 시간 안에 작업을 성공하지 못 할 수도 있습니다.
 
 </details>
 
@@ -207,13 +208,87 @@ SAGA 패턴 중 Orchestration 과 Choreography 2가지 유형이 있습니다.
 
 </details>
 
-## 트랜잭션 범위(미래)
+## 트랜잭션 분석(미래)
 
 <details>
-  <summary>트랜잭션 범위(미래)</summary>
+  <summary>트랜잭션 분석(미래)</summary>
+
+분산환경의 도입 전에 한 프로젝트 안에서 시범적으로, 부가적인 로직 하나만 도메인 로직들에서 제거해보겠습니다.
 
 ```
+private Long processOrder(OrderCommand command, Deque<Runnable> compensationActions) {
+
+    ...
+    
+    publisher.publishEvent(주문 생성 완료);
+    return order.getId();
+}
+```
+
+현재 코드와의 차이점은 이제 외부 플랫폼을 직접 호출하지 않고, 이를 트리거할 수 있도록 "주문 생성 완료"라는 이벤트를 발행한다는 점입니다.
+
+1. 이제 OrderFacade 는 도메인 로직만 수행하고, OrderDataPlatform 등의 부가적인 관련된 로직은 이벤트가 발행됨에 따라 개별적으로 실행되기 때문에 코드가 간결해지고, 유지보수가 더 용이해졌습니다. 지금 이렇게 부가적인 로직이 하나만 있으니 체감이 되지 않을 수도 있지만 이런 부가적인 로직이 수십, 수백 개가 된다고 생각해보면 하나의 메서드 안에서 유지보수하기에 부담이 되리라는 것에 공감하실 수 있을 겁니다.
+2. 서로 간의 결합을 느슨하게 만들었습니다. 이때 중요한 것은 주문 도메인이 자기 자신의 작업을 알려야 한다는 것입니다. 만약 주문 도메인이 데이터 플랫폼을 호출하려고 "플랫폼 전송"이라는 이벤트를 알리게 되면 결국 주문 도메인이 "플랫폼"이라는 것을 알아야만 하기에 결합도가 낮아졌다고 할 수 없습니다.
+3. 만약 플랫폼 작업이 지연되거나 타임아웃이 발생하더라도 주문 도메인은 자신의 로직을 온전히 마칠 수 있게 됩니다.
+
+여기까지가 현재 작업한 내용이고, 다음 스텝으로는 MSA 로 전환하고 Kafka 를 도입하여 이벤트 주도 아키텍처를 구현할 예정입니다.
 
 ```
+public Long createOrder(OrderCommand command) {
+    
+    Order order = orderService.createOrderAndItems(...);
+    publisher.publishEvent(주문 생성 완료);
+    return order.getId();
+}
+    
+@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+public void saveOrderOutbox(주문 생성 완료) {
+    outboxRepository.save(Outbox.from(주문 생성 완료));
+}
+
+@Async(ORDER_EVENT_EXECUTOR)
+@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+public void sendMessageToKafka(주문 생성 완료) {
+    kafkaTemplate.send(KafkaMessage.from(주문 생성 완료));
+}
+```
+
+주문 서비스에서는 이제 정말로 주문 생성에만 관심이 있습니다. 그 외에 상품, 포인트, 장바구니 등등의 영역에서 일어나는 일은 해당 도메인 서비스가 처리하기를 기대합니다.
+
+주문 서비스는 다른 서비스들이 주문 생성이 완료되었음을 알게 하기 위한 이벤트 발헹을 하고, 트랜잭셔널 메시징을 위해 커밋 전에 아웃박스를 같은 트랜잭션 안에서 저장합니다. 커밋 이후에는 KafkaTemplate 을 사용하여 메시지를 다른 서비스로 전파합니다.
+
+만약 `sendMessageToKafka` 메서드가 실행 중에 실패하게 되면 배치 작업을 통해 발행에 실패한 메시지는 재발송하여 정합성을 맞춥니다.
+
+```
+@KafkaListener(topics = "order-created", groupId = "items")
+public void usePointOnOrderCreated(String message) {
+    try {
+        pointService.usePoint(mapToCommand(message));
+    } catch (Exception e) {
+        pointEventPublisher.publishEvent(포인트 사용 실패);
+    }
+}
+```
+
+메시지 발행 이후 시나리오는 포인트 서버를 예로 들어보겠습니다. 포인트 서버가 주문 생성 메시지를 받아들이면 포인트 사용을 수행하는 서비스를 호출하여 로직을 수행합니다.
+
+이때 만약 예외가 발생하면 수행하던 로직은 즉시 롤백시키고, 주문 생성 완료 이벤트를 발행하던 것과 같이 포인트 사용 실패 이벤트를 발행합니다.
+
+이 포인트 사용 실패 메시지에 관심을 가지는 또 다른 서버는 이 메시지를 받아와서 보상 트랜잭션을 수행하고 작업상태값을 저장함으로써 전체 작업의 정합성을 지키고 분산 시스템을 구현할 수 있게 됩니다.
+
+</details>
+
+## 결론
+
+<details>
+  <summary>결론</summary>
+
+지금까지 현재 시스템의 구조를 분석하고, 트랜잭션 범위와 관련된 문제점을 해결하기 위해 이벤트 주도 아키텍처와 SAGA 패턴을 도입하는 방안을 제시했습니다.
+
+이를 통해 초기의 단일 트랜잭션 중심 설계에서 벗어나 서비스 간의 결합을 느슨하게 하고, 각 서비스가 독립적으로 동작할 수 있도록 분산 환경을 구축할 수 있습니다.
+
+이러한 변화는 유지보수성을 높이고, 서비스 규모가 확장됨에 따라 발생할 수 있는 성능 저하, 타임아웃 문제 등에서 자유로워지게 합니다.
+
+특히 Kafka 를 메시지 브로커로 사용하는 이벤트 기반 아키텍처를 통해 대용량 처리를 가능하게 하고, 트랜잭셔널 메시징을 통해 데이터 정합성까지 확보할 수 있습니다.
 
 </details>
