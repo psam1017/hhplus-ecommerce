@@ -89,7 +89,8 @@ public class OrderFacade {
 
         cartService.deleteCartItems(command.userId(), itemIds);
 
-        // 위에서 모든 트랜잭션 관련 처리가 성공적으로 끝나고 이 아래에서부터는 예외가 발생하지 않는다고 단정(assert)하고 트랜잭셔널 메시징은 하지 않습니다.
+        // 위에서 모든 트랜잭션 관련 처리가 성공적으로 끝나고 커밋하기 때문에 이 아래에서부터는 예외가 발생하지 않는다고 단정(assert)하고 트랜잭셔널 메시징은 하지 않습니다.
+        // 단, 애플리케이션 종료 상황에서의 이벤트 유실을 막기 위해 gracefull shutdown 설정을 추가해뒀습니다.
         // 따라서 @TransactionalEventListener 대신 @EventListener 를 사용하고, 부가적인 로직은 @Async 를 사용하여 비동기적으로 수행합니다.
         // 이번에는 목표한 대로 도메인 로직 수행에 부가적인 로직이 관여하지 않도록 이벤트를 발행하는 것까지만 수행합니다.
         // MSA 전환, MB(카프카) 도입 예정 중에 있고, 그때 이 주석도 같이 삭제합니다.
