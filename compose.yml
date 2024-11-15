@@ -1,3 +1,7 @@
+# docker network create ecommerce-network
+# docker network ls
+# docker compose up --build -d
+
 services:
   application:
     container_name: hhplus-ecommerce
@@ -11,6 +15,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
 
   mysql:
     container_name: mysql
@@ -28,6 +36,8 @@ services:
       start_period: 5s
       interval: 3s
       retries: 10
+    networks:
+      - ecommerce-network
 
   redis:
     container_name: redis
@@ -40,3 +50,64 @@ services:
       test: "redis-cli ping"
       interval: 3s
       retries: 10
+    networks:
+      - ecommerce-network
+
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.5.4
+    restart: always
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ./kafka/zookeeper_data:/var/lib/zookeeper/data
+      - ./kafka/zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - ecommerce-network
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.5.4
+    restart: always
+    volumes:
+      - ./kafka/kafka_data:/var/lib/kafka/data
+    ports:
+      - 29092:29092
+      - 9092:9092
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: kafka-cluster cluster-id --bootstrap-server kafka:9092 || exit 1
+      interval: 3s
+      retries: 20
+    networks:
+      - ecommerce-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafka-ui
+    restart: always
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: Single Cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    external: true

@@ -28,6 +28,7 @@ public class Item {
     private int price;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(31)")
     private ItemStatus status;
 
     @Builder

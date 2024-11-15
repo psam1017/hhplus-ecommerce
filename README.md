@@ -205,3 +205,33 @@
 [동시성 제어 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP11/docs/concurrency/note.md)
 
 </details>
+
+## 캐시 보고서
+<details>
+  <summary>캐시 보고서</summary>
+
+- STEP 13 과제인 캐시 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[캐시 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP13/docs/cache/note.md)
+
+</details>
+
+## SQL 튜닝 보고서
+<details>
+  <summary>SQL 튜닝 보고서</summary>
+
+- STEP 15 과제인 SQL 튜닝 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[SQL 튜닝 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP15/docs/sql-tuning/note.md)
+
+</details>
+
+## 서비스 확장 보고서
+<details>
+  <summary>서비스 확장 보고서</summary>
+
+- STEP 16 과제인 서비스 확장 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[서비스 확장 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP16/docs/scalability/note.md)
+
+</details>

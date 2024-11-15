@@ -8,6 +8,7 @@ build/
 ### Custom ###
 logs/
 mysql/
+/kafka/
 
 ### STS ###
 .apt_generated

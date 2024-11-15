@@ -26,6 +26,7 @@ public class Order {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(31)")
     private OrderStatus status;
 
     private LocalDateTime orderDateTime;

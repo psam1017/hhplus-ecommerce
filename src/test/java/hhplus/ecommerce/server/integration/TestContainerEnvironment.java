@@ -11,6 +11,7 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -65,4 +66,18 @@ public abstract class TestContainerEnvironment {
         REDIS_CONTAINER.start();
     }
     // Redis 끝
+
+    // Kafka 시작
+    private static final String KAFKA_FULL_IMAGE_NAME = "confluentinc/cp-kafka:7.5.4";
+    private static final int KAFKA_PORT = 9092;
+    @Container
+    private static final ConfluentKafkaContainer CONFLUENT_KAFKA_CONTAINER;
+
+    static {
+        CONFLUENT_KAFKA_CONTAINER = new ConfluentKafkaContainer(DockerImageName.parse(KAFKA_FULL_IMAGE_NAME))
+                .withExposedPorts(KAFKA_PORT)
+                .withReuse(true);
+        CONFLUENT_KAFKA_CONTAINER.start();
+    }
+    // Kafka 끝
 }

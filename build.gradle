@@ -36,6 +36,10 @@ dependencies {
 	testImplementation 'org.testcontainers:mysql'
 	// https://testcontainers.com/modules/redis/
 	testImplementation 'com.redis:testcontainers-redis:2.2.2'
+	// https://testcontainers.com/modules/kafka/
+	// https://java.testcontainers.org/modules/kafka/
+	testImplementation 'org.testcontainers:kafka:1.20.3'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
 
 	// web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -73,6 +77,9 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.reflections/reflections
 	// java reflection util
 	implementation 'org.reflections:reflections:0.10.2'
+
+	// kafka
+	implementation 'org.springframework.kafka:spring-kafka'
 }
 
 test {
