@@ -9,6 +9,7 @@
 - [기술스택](#기술스택)
 - [패키지 구조](#패키지-구조)
 - [동시성 제어 보고서](#동시성-제어-보고서)
+- [카프카 실행 및 테스트 보고서](#카프카-실행-및-테스트-보고서)
 
 ---
 
@@ -233,5 +234,15 @@
 - STEP 16 과제인 서비스 확장 보고서입니다. 해당 문서 참고 부탁드립니다.
 
 [서비스 확장 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP16/docs/scalability/note.md)
+
+</details>
+
+## 카프카 실행 및 테스트 보고서
+<details>
+  <summary>카프카 실행 및 테스트 보고서</summary>
+
+- STEP 17 과제를 정리한 카프카 실행 및 테스트 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[카프카 실행 및 테스트 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP17/docs/kafka/note.md)
 
 </details>
