@@ -7,7 +7,7 @@ import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.data.OrderDataPlatform;
+import hhplus.ecommerce.server.infrastructure.event.OrderCreatedEvent;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
@@ -18,7 +18,7 @@ import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.event.ApplicationEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +28,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
 
     @Autowired
@@ -53,8 +53,8 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
     @Autowired
     OrderItemJpaRepository orderItemJpaRepository;
 
-    @MockBean
-    OrderDataPlatform orderDataPlatform;
+    @Autowired
+    ApplicationEvents applicationEvents;
 
     @DisplayName("동시에 발생한 30번의 주문 요청을 충돌 없이 처리할 수 있다.")
     @Test
@@ -110,7 +110,8 @@ public class OrderFacadeConcurrencyTest extends TestContainerEnvironment {
         ItemStock itemStock = itemStockJpaRepository.findByItemId(item.getId()).orElseThrow();
         assertThat(itemStock.getAmount()).isEqualTo(0);
 
-        verify(orderDataPlatform, times(stockAmount)).saveOrderData(anyMap());
+        List<OrderCreatedEvent> events = applicationEvents.stream(OrderCreatedEvent.class).toList();
+        assertThat(events).hasSize(stockAmount);
     }
 
     @DisplayName("동시에 여러 상품을 주문하더라도 교착상태에 빠지지 않는다.")
