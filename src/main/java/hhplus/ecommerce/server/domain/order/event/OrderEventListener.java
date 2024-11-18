@@ -15,7 +15,7 @@ public class OrderEventListener {
     private final OrderDataPlatform orderDataPlatform;
 
     @Async(EVENT_ASYNC_TASK_EXECUTOR)
-    @EventListener(OrderEventListener.class)
+    @EventListener(OrderCreatedEvent.class)
     public void sendOrderDataToDataPlatform(OrderCreatedEvent event) {
         orderDataPlatform.saveOrderData(event.itemIdStockAmountMap());
     }
