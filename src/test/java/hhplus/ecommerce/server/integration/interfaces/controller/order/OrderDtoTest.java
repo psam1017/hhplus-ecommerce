@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.integration.interfaces.controller.order;
 
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
-import hhplus.ecommerce.server.interfaces.controller.order.OrderDto;
+import hhplus.ecommerce.server.interfaces.api.order.OrderDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotEmpty;

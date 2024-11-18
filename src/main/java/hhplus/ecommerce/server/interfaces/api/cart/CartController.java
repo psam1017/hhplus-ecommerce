@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.interfaces.controller.cart;
+package hhplus.ecommerce.server.interfaces.api.cart;
 
 import hhplus.ecommerce.server.application.CartFacade;
 import hhplus.ecommerce.server.domain.cart.service.CartCommand;

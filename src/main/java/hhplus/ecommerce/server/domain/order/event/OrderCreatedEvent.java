@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.event;
+package hhplus.ecommerce.server.domain.order.event;
 
 import java.util.Map;
 

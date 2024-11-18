@@ -4,12 +4,10 @@ import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class PointFacade {
 
     private final PointService pointService;

@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.data;
+package hhplus.ecommerce.server.infrastructure.platform;
 
 import org.springframework.stereotype.Component;
 

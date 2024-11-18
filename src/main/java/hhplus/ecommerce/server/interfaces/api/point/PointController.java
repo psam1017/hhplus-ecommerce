@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.interfaces.controller.point;
+package hhplus.ecommerce.server.interfaces.api.point;
 
 import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;

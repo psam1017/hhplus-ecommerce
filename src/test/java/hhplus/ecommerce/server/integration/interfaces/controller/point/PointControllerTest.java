@@ -3,7 +3,7 @@ package hhplus.ecommerce.server.integration.interfaces.controller.point;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.PointFacade;
 import hhplus.ecommerce.server.domain.point.service.PointCommand;
-import hhplus.ecommerce.server.interfaces.controller.point.PointController;
+import hhplus.ecommerce.server.interfaces.api.point.PointController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

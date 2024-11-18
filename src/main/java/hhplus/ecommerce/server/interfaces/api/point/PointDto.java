@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.interfaces.controller.point;
+package hhplus.ecommerce.server.interfaces.api.point;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.integration.interfaces.controller.point;
 
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
-import hhplus.ecommerce.server.interfaces.controller.point.PointDto;
+import hhplus.ecommerce.server.interfaces.api.point.PointDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.interfaces.controller.order;
+package hhplus.ecommerce.server.interfaces.api.order;
 
 import hhplus.ecommerce.server.application.OrderFacade;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;

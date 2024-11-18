@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.ItemFacade;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
-import hhplus.ecommerce.server.interfaces.controller.item.ItemController;
+import hhplus.ecommerce.server.interfaces.api.item.ItemController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

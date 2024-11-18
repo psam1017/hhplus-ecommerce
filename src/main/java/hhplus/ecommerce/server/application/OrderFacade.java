@@ -6,6 +6,7 @@ import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
+import hhplus.ecommerce.server.domain.order.event.OrderCreatedEvent;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderInfo;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
@@ -13,17 +14,16 @@ import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.service.UserService;
-import hhplus.ecommerce.server.infrastructure.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Service
 public class OrderFacade {
 
     private final UserService userService;

@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.interfaces.controller.item;
+package hhplus.ecommerce.server.interfaces.api.item;
 
 import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
