@@ -7,7 +7,7 @@ import hhplus.ecommerce.server.domain.item.service.ItemRepository;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
-import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
+import hhplus.ecommerce.server.domain.order.repository.OrderItemRepository;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.infrastructure.cache.CacheName;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;

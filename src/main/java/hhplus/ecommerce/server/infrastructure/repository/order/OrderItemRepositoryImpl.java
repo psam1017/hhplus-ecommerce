@@ -1,7 +1,7 @@
 package hhplus.ecommerce.server.infrastructure.repository.order;
 
 import hhplus.ecommerce.server.domain.order.OrderItem;
-import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
+import hhplus.ecommerce.server.domain.order.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

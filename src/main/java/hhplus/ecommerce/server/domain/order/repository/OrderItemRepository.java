@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.domain.order.service;
+package hhplus.ecommerce.server.domain.order.repository;
 
 import hhplus.ecommerce.server.domain.order.OrderItem;
 
