@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.order;
+package hhplus.ecommerce.server.integration.interfaces.api.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.OrderFacade;

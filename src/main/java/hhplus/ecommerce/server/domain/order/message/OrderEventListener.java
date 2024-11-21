@@ -38,12 +38,8 @@ public class OrderEventListener {
             value = OrderCreatedEvent.class,
             phase = TransactionPhase.AFTER_COMMIT
     )
-    public void sendOrderCreatedMessage(OrderCreatedEvent event) {
-        try {
-            orderMessageProducer.sendMessage(OrderTopicName.ORDER_CREATED, event.transactionKey(), writeMessage(event));
-        } catch (Exception e) {
-            orderOutboxRepository.updateMessageStatusByTransactionKey(event.transactionKey(), OrderOutboxStatus.FAILED, e.getMessage());
-        }
+    public void sendOrderCreatedMessage(OrderCreatedEvent event) throws JsonProcessingException {
+        orderMessageProducer.sendMessage(OrderTopicName.ORDER_CREATED, event.transactionKey(), writeMessage(event));
     }
 
     private String writeMessage(OrderCreatedEvent event) throws JsonProcessingException {

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -18,8 +19,9 @@ public class OrderMessageConsumer {
 
     private final OrderOutboxRepository orderOutboxRepository;
 
-    @KafkaListener(topics = OrderTopicName.ORDER_CREATED, groupId = "ecommerce")
-    public void listenOrderCreated(ConsumerRecord<String, String> record) {
+    @Transactional
+    @KafkaListener(topics = OrderTopicName.ORDER_CREATED, groupId = "order:order-created")
+    public void consumeOrderCreatedEvent(ConsumerRecord<String, String> record) {
         String key = record.key();
         Optional<OrderOutbox> optOutbox = orderOutboxRepository.findByTransactionKey(key);
         if (optOutbox.isPresent()) {

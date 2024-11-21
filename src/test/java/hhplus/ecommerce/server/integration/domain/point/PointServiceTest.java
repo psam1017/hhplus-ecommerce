@@ -71,8 +71,6 @@ public class PointServiceTest extends TestContainerEnvironment {
         int leftPoint = 100;
         User user = createUser("testUser");
         Point point = createPoint(leftPoint, user);
-        System.out.println("user.getId() = " + user.getId());
-        System.out.println("point.getId() = " + point.getId());
         int chargeAmount = 50;
 
         // when

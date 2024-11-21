@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.point;
+package hhplus.ecommerce.server.integration.interfaces.api.point;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.PointFacade;

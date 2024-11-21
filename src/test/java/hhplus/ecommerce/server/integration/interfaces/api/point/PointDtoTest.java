@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.point;
+package hhplus.ecommerce.server.integration.interfaces.api.point;
 
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import hhplus.ecommerce.server.interfaces.api.point.PointDto;

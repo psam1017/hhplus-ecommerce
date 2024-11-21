@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.order;
+package hhplus.ecommerce.server.integration.interfaces.api.order;
 
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import hhplus.ecommerce.server.interfaces.api.order.OrderDto;

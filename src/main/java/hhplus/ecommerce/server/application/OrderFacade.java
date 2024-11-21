@@ -89,6 +89,9 @@ public class OrderFacade {
             compensationActions.push(() -> cartService.putItem(buildCart(itemIdStockAmountMap, user, items, itemId)));
         }
 
+        // 전체 코드에 트랜잭션 적용하면 분산락과 커넥션 간 데드락이 발생합니다.
+        // 따라서 트랜잭셔널 메시징을 구현하기 위해 이벤트 발행만 하는 트랜잭션을 새로 시작합니다.
+        // 이후 사가 패턴을 진행하면서 아래 코드는 주문을 저장하는 코드와 함께 합쳐질 예정입니다.
         orderService.publishOrderCreatedEvent(order.getId(), itemIdStockAmountMap);
         return order.getId();
     }

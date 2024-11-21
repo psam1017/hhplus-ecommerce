@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.cart;
+package hhplus.ecommerce.server.integration.interfaces.api.cart;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.application.CartFacade;

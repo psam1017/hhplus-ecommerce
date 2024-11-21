@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.integration.interfaces.controller.cart;
+package hhplus.ecommerce.server.integration.interfaces.api.cart;
 
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import hhplus.ecommerce.server.interfaces.api.cart.CartDto;
