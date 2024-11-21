@@ -4,6 +4,5 @@ public enum OrderOutboxStatus {
 
     CREATED,
     PUBLISHED,
-    FAILED,
     ;
 }

@@ -1,6 +1,6 @@
-package hhplus.ecommerce.server.integration.infrastructure.scheduler;
+package hhplus.ecommerce.server.integration.interfaces.scheduler;
 
-import hhplus.ecommerce.server.infrastructure.scheduler.ItemCacheScheduler;
+import hhplus.ecommerce.server.interfaces.scheduler.ItemCacheScheduler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

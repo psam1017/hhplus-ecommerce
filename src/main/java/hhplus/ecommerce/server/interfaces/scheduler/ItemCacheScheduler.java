@@ -1,4 +1,4 @@
-package hhplus.ecommerce.server.infrastructure.scheduler;
+package hhplus.ecommerce.server.interfaces.scheduler;
 
 import hhplus.ecommerce.server.infrastructure.cache.ItemCacheWarmer;
 import lombok.RequiredArgsConstructor;
