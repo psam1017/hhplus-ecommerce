@@ -13,5 +13,5 @@ public interface OrderOutboxJpaRepository extends JpaRepository<OrderOutbox, Lon
 
     Optional<OrderOutbox> findByTransactionKey(String transactionKey);
 
-    List<OrderOutbox> findAllByStatusAndCreatedDateTimeBefore(OrderOutboxStatus status, LocalDateTime createdDateTime);
+    List<OrderOutbox> findAllByStatusAndCreatedDateTimeBeforeAndRetryCountLessThan(OrderOutboxStatus status, LocalDateTime createdDateTime, int retryCount);
 }

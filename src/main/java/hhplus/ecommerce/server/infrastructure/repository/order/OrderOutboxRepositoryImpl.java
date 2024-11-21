@@ -29,7 +29,7 @@ public class OrderOutboxRepositoryImpl implements OrderOutboxRepository {
     }
 
     @Override
-    public List<OrderOutbox> findAllByStatusAndCreatedDateTimeBefore(OrderOutboxStatus status, LocalDateTime createdDateTime) {
-        return orderOutboxJpaRepository.findAllByStatusAndCreatedDateTimeBefore(status, createdDateTime);
+    public List<OrderOutbox> findAllByStatusAndCreatedDateTimeBeforeAndRetryCountLessThan(OrderOutboxStatus status, LocalDateTime createdDateTime, int retryCount) {
+        return orderOutboxJpaRepository.findAllByStatusAndCreatedDateTimeBeforeAndRetryCountLessThan(status, createdDateTime, retryCount);
     }
 }

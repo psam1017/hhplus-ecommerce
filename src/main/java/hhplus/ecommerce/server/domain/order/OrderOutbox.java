@@ -31,6 +31,8 @@ public class OrderOutbox {
     private LocalDateTime createdDateTime;
     private LocalDateTime publishedDateTime;
 
+    private int retryCount;
+
     @Builder
     protected OrderOutbox(String topicName, String transactionKey, String originalMessage) {
         this.topicName = topicName;
@@ -38,10 +40,16 @@ public class OrderOutbox {
         this.originalMessage = originalMessage;
         this.createdDateTime = LocalDateTime.now();
         this.status = OrderOutboxStatus.CREATED;
+        this.retryCount = 0;
     }
 
     public void logPublished() {
         this.status = OrderOutboxStatus.PUBLISHED;
         this.publishedDateTime = LocalDateTime.now();
+    }
+
+    public void logFailed(String reason) {
+        this.retryCount++;
+        this.reason = reason;
     }
 }
