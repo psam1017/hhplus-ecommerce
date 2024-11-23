@@ -46,15 +46,15 @@ public class ItemDto {
     }
 
     public record ItemSearchCond(
-            @Schema(name = "page", description = "페이지 번호", example = "1")
+//            @Schema(name = "page", description = "페이지 번호", example = "1")
             Integer page,
-            @Schema(name = "size", description = "페이지 크기", example = "10")
+//            @Schema(name = "size", description = "페이지 크기", example = "10")
             Integer size,
-            @Schema(name = "prop", description = "정렬 기준", example = "name")
+//            @Schema(name = "prop", description = "정렬 기준", example = "name")
             String prop,
-            @Schema(name = "dir", description = "정렬 방향", example = "asc")
+//            @Schema(name = "dir", description = "정렬 방향", example = "asc")
             String dir,
-            @Schema(name = "keyword", description = "검색어", example = "사과")
+//            @Schema(name = "keyword", description = "검색어", example = "사과")
             String keyword
     ) {
     }

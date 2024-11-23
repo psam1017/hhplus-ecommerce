@@ -20,10 +20,9 @@ public class AccessLogFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.trace("AccessLogFilter.doFilter");
         if (request instanceof HttpServletRequest req) {
             String clientIp = extractClientIp(req);
-            log.trace("{} -> {} {} {}", clientIp, req.getMethod(), req.getRequestURI(), req.getProtocol());
+            log.info("{} -> {} {} {}", clientIp, req.getMethod(), req.getRequestURI(), req.getProtocol());
         }
         chain.doFilter(request, response);
     }

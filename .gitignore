@@ -9,6 +9,8 @@ build/
 logs/
 mysql/
 /kafka/
+/grafana/data
+/prometheus/data
 
 ### STS ###
 .apt_generated

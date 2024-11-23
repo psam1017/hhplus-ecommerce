@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -94,14 +91,15 @@ public class ItemService {
 
     public List<Item> findItemsInSameOrder(List<Long> topItemIds) {
         List<Item> items = itemRepository.findAllById(new HashSet<>(topItemIds));
-        return sortItemsByTopItemIds(topItemIds, items);
+        return sortItemsByTopItemIds(new ArrayList<>(topItemIds), items);
     }
 
-    private List<Item> sortItemsByTopItemIds(List<Long> topItemIds, List<Item> items) {
+    private List<Item> sortItemsByTopItemIds(List<Number> topItemIds, List<Item> items) {
         Map<Long, Item> itemMap = items.stream().collect(Collectors.toMap(Item::getId, item -> item));
         return topItemIds.stream()
+                .map(Number::longValue)
                 .filter(itemMap::containsKey)
                 .map(itemMap::get)
-                .toList();
+                .collect(Collectors.toList());
     }
 }

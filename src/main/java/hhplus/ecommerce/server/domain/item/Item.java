@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.domain.item;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -39,6 +40,7 @@ public class Item {
         this.status = ItemStatus.ACTIVE;
     }
 
+    @JsonIgnore
     public boolean isActive() {
         return this.status == ItemStatus.ACTIVE;
     }

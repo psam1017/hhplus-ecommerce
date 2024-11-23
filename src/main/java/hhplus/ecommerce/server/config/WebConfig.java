@@ -38,7 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
         FilterRegistrationBean<AccessLogFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new AccessLogFilter());
         registrationBean.setOrder(1);
-        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.addUrlPatterns("/*");
         return registrationBean;
     }
 
