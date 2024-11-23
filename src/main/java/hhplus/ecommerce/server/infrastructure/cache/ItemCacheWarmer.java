@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.service.ItemCommand;
 import hhplus.ecommerce.server.domain.item.service.ItemRepository;
-import hhplus.ecommerce.server.domain.order.service.OrderItemRepository;
+import hhplus.ecommerce.server.domain.order.repository.OrderItemRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;

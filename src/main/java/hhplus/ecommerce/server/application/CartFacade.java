@@ -10,7 +10,7 @@ import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class CartFacade {
 
     private final UserService userService;

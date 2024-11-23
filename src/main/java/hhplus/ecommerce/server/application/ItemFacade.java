@@ -6,18 +6,15 @@ import hhplus.ecommerce.server.domain.item.service.ItemInfo;
 import hhplus.ecommerce.server.domain.item.service.ItemService;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class ItemFacade {
 
     private final OrderService orderService;

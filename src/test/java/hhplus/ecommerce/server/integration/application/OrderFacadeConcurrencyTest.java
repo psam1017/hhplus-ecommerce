@@ -7,7 +7,7 @@ import hhplus.ecommerce.server.domain.item.exception.OutOfItemStockException;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.user.User;
-import hhplus.ecommerce.server.infrastructure.event.OrderCreatedEvent;
+import hhplus.ecommerce.server.domain.order.message.OrderCreatedEvent;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepository;
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;

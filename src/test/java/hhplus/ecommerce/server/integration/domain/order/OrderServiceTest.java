@@ -4,8 +4,12 @@ import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
 import hhplus.ecommerce.server.domain.order.Order;
 import hhplus.ecommerce.server.domain.order.OrderItem;
+import hhplus.ecommerce.server.domain.order.OrderOutbox;
+import hhplus.ecommerce.server.domain.order.OrderOutboxStatus;
 import hhplus.ecommerce.server.domain.order.enumeration.OrderStatus;
 import hhplus.ecommerce.server.domain.order.exception.NoSuchOrderException;
+import hhplus.ecommerce.server.domain.order.message.OrderMessageProducer;
+import hhplus.ecommerce.server.domain.order.message.OrderTopicName;
 import hhplus.ecommerce.server.domain.order.service.OrderCommand;
 import hhplus.ecommerce.server.domain.order.service.OrderService;
 import hhplus.ecommerce.server.domain.user.User;
@@ -13,17 +17,21 @@ import hhplus.ecommerce.server.infrastructure.repository.item.ItemJpaCommandRepo
 import hhplus.ecommerce.server.infrastructure.repository.item.ItemStockJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderItemJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.order.OrderJpaRepository;
+import hhplus.ecommerce.server.infrastructure.repository.order.OrderOutboxJpaRepository;
 import hhplus.ecommerce.server.infrastructure.repository.user.UserJpaRepository;
 import hhplus.ecommerce.server.integration.TestContainerEnvironment;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.willThrow;
 
 public class OrderServiceTest extends TestContainerEnvironment {
 
@@ -44,6 +52,12 @@ public class OrderServiceTest extends TestContainerEnvironment {
 
     @Autowired
     ItemStockJpaRepository itemStockJpaRepository;
+
+    @Autowired
+    OrderOutboxJpaRepository orderOutboxJpaRepository;
+
+    @MockBean
+    OrderMessageProducer orderMessageProducer;
 
     @DisplayName("주문을 생성할 수 있다.")
     @Test
@@ -208,6 +222,23 @@ public class OrderServiceTest extends TestContainerEnvironment {
         // then
         assertThat(result).hasSize(2)
                 .containsExactly(item2.getId(), item1.getId());
+    }
+
+    @DisplayName("주문 완료 이벤트를 발행하면 Outbox 에 메시지가 저장된다.")
+    @Test
+    void publishOrderCreatedEvent() {
+        // given
+        Long orderId = 1L;
+        Map<Long, Integer> itemIdStockAmountMap = Map.of(2L, 3);
+
+        // when
+        sut.publishOrderCreatedEvent(orderId, itemIdStockAmountMap);
+
+        // then
+        List<OrderOutbox> outboxes = orderOutboxJpaRepository.findAll();
+        assertThat(outboxes).hasSize(1)
+                .extracting(OrderOutbox::getTopicName)
+                .containsExactly(OrderTopicName.ORDER_CREATED);
     }
 
     private User createUser(String username) {

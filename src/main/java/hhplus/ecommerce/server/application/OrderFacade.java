@@ -1,5 +1,6 @@
 package hhplus.ecommerce.server.application;
 
+import hhplus.ecommerce.server.domain.cart.Cart;
 import hhplus.ecommerce.server.domain.cart.service.CartService;
 import hhplus.ecommerce.server.domain.item.Item;
 import hhplus.ecommerce.server.domain.item.ItemStock;
@@ -13,17 +14,15 @@ import hhplus.ecommerce.server.domain.point.Point;
 import hhplus.ecommerce.server.domain.point.service.PointService;
 import hhplus.ecommerce.server.domain.user.User;
 import hhplus.ecommerce.server.domain.user.service.UserService;
-import hhplus.ecommerce.server.infrastructure.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+@Service
 public class OrderFacade {
 
     private final UserService userService;
@@ -31,8 +30,6 @@ public class OrderFacade {
     private final ItemService itemService;
     private final CartService cartService;
     private final OrderService orderService;
-
-    private final ApplicationEventPublisher publisher;
 
     /**
      * 주문 + 결제 VS 주문 -> 결제
@@ -88,14 +85,23 @@ public class OrderFacade {
         compensationActions.push(() -> orderService.cancelOrder(order.getId()));
 
         cartService.deleteCartItems(command.userId(), itemIds);
+        for (Long itemId : itemIdStockAmountMap.keySet()) {
+            compensationActions.push(() -> cartService.putItem(buildCart(itemIdStockAmountMap, user, items, itemId)));
+        }
 
-        // 위에서 모든 트랜잭션 관련 처리가 성공적으로 끝나고 커밋하기 때문에 이 아래에서부터는 예외가 발생하지 않는다고 단정(assert)하고 트랜잭셔널 메시징은 하지 않습니다.
-        // 단, 애플리케이션 종료 상황에서의 이벤트 유실을 막기 위해 gracefull shutdown 설정을 추가해뒀습니다.
-        // 따라서 @TransactionalEventListener 대신 @EventListener 를 사용하고, 부가적인 로직은 @Async 를 사용하여 비동기적으로 수행합니다.
-        // 이번에는 목표한 대로 도메인 로직 수행에 부가적인 로직이 관여하지 않도록 이벤트를 발행하는 것까지만 수행합니다.
-        // MSA 전환, MB(카프카) 도입 예정 중에 있고, 그때 이 주석도 같이 삭제합니다.
-        publisher.publishEvent(new OrderCreatedEvent(order.getId(), itemIdStockAmountMap));
+        // 전체 코드에 트랜잭션 적용하면 분산락과 커넥션 간 데드락이 발생합니다.
+        // 따라서 트랜잭셔널 메시징을 구현하기 위해 이벤트 발행만 하는 트랜잭션을 새로 시작합니다.
+        // 이후 사가 패턴을 진행하면서 아래 코드는 주문을 저장하는 코드와 함께 합쳐질 예정입니다.
+        orderService.publishOrderCreatedEvent(order.getId(), itemIdStockAmountMap);
         return order.getId();
+    }
+
+    private static Cart buildCart(Map<Long, Integer> itemIdStockAmountMap, User user, List<Item> items, Long itemId) {
+        return Cart.builder()
+                .user(user)
+                .item(items.stream().filter(item -> item.getId().equals(itemId)).findFirst().orElseThrow())
+                .quantity(itemIdStockAmountMap.get(itemId))
+                .build();
     }
 
     public List<OrderInfo.OrderDetail> findOrders(Long userId) {
