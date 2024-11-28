@@ -1,10 +1,11 @@
 # docker network create ecommerce-network
 # docker network ls
 # docker compose up --build -d
+# grafana login id : admin, password : admin
 
 services:
   application:
-    container_name: hhplus-ecommerce
+    container_name: application
     build:
       context: ./
       dockerfile: Dockerfile
@@ -87,9 +88,10 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     healthcheck:
-      test: kafka-cluster cluster-id --bootstrap-server kafka:9092 || exit 1
+      test: "kafka-cluster cluster-id --bootstrap-server kafka:9092 || exit 1"
+      start_period: 15s
       interval: 3s
-      retries: 20
+      retries: 60
     networks:
       - ecommerce-network
 
@@ -105,6 +107,33 @@ services:
       KAFKA_CLUSTERS_0_NAME: Single Cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - ecommerce-network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/data:/prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --storage.tsdb.path=/prometheus
+      - --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - ecommerce-network
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
     networks:
       - ecommerce-network
 
