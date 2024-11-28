@@ -10,6 +10,7 @@
 - [패키지 구조](#패키지-구조)
 - [동시성 제어 보고서](#동시성-제어-보고서)
 - [카프카 실행 및 테스트 보고서](#카프카-실행-및-테스트-보고서)
+- [부하테스트 보고서](#부하테스트-보고서)
 
 ---
 
@@ -244,5 +245,25 @@
 - STEP 17 과제를 정리한 카프카 실행 및 테스트 보고서입니다. 해당 문서 참고 부탁드립니다.
 
 [카프카 실행 및 테스트 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP17/docs/kafka/note.md)
+
+</details>
+
+## 부하테스트 보고서
+<details>
+  <summary>부하테스트 보고서</summary>
+
+- STEP 19 과제를 정리한 부하테스트 보고서입니다. 해당 문서 참고 부탁드립니다.
+
+[부하테스트 보고서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP19/docs/stress/note.md)
+
+</details>
+
+## 성능지표 분석 및 장애대응 방안 문서
+<details>
+  <summary>성능지표 분석 및 장애대응 방안 문서</summary>
+
+- STEP 20 과제를 정리한 성능지표 분석 및 장애대응 방안 문서입니다. 해당 문서 참고 부탁드립니다.
+
+[성능지표 분석 및 장애대응 방안 문서](https://github.com/psam1017/hhplus-ecommerce/blob/STEP20/docs/outrage-handling/note.md)
 
 </details>
